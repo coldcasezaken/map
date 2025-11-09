@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Coldcase Kaart</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    /* Zorg dat de kaart het volledige scherm of gewenste hoogte gebruikt */
+    #map { height: 100vh; width: 100%; }
+    body, html { margin:0; padding:0; height:100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // 1. Kaart instellen
+    var map = L.map('map').setView([52.1, 5.1], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 2. Cold case locaties
+    var coldCases = [
+      {lat: 51.661241, lng: 5.390367, link: 'https://www.coldcasezaken.nl/ingrid-hakkert', title: 'De moord op Ingrid Hakkert'},
+      {lat: 51.938211, lng: 4.537739, link: 'https://www.coldcasezaken.nl/geertje-vliegenthart-roest', title: 'Verdwijning van Geertje Vliegenthart'}
+    ];
+
+    // 3. Markers toevoegen met popup
+    coldCases.forEach(function(caseItem) {
+      L.marker([caseItem.lat, caseItem.lng])
+        .addTo(map)
+        .bindPopup(
+          '<div style="font-size:16px; line-height:1.4; max-width:250px; text-align:left;">' +
+          '<strong>' + caseItem.title + '</strong><br>' +
+          '<a href="' + caseItem.link + '" target="_blank">Bekijk dossier</a>' +
+          '</div>'
+        );
+    });
+  </script>
+</body>
+</html>
