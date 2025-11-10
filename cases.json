@@ -1,22 +1,7 @@
 [
-  {
-    "lat": 51.661241,
-    "lng": 5.390367,
-    "title": "De moord op Ingrid Hakkert",
-    "link": "https://www.coldcasezaken.nl/ingrid-hakkert"
-  },
-  {
-    "lat": 51.938211,
-    "lng": 4.537739,
-    "title": "Verdwijning van Geertje Vliegenthart",
-    "link": "https://www.coldcasezaken.nl/geertje-vliegenthart-roest"
-  },
-  {
-    "lat": 52.090298,
-    "lng": 5.341390,
-    "title": "Verdwijning Hanno van Mil",
-    "link": "https://www.coldcasezaken.nl/hanno-van-mil"
-  },
+  {"lat":51.661241,"lng":5.390367,"title":"De moord op Ingrid Hakkert","link":"https://www.coldcasezaken.nl/ingrid-hakkert"},
+  {"lat":51.938211,"lng":4.537739,"title":"Verdwijning van Geertje Vliegenthart","link":"https://www.coldcasezaken.nl/geertje-vliegenthart-roest"},
+  {"lat":52.090298,"lng":5.341390,"title":"Verdwijning Hanno van Mil","link":"https://www.coldcasezaken.nl/hanno-van-mil"},
   {"lat":51.499324,"lng":5.317251,"title":"De moord op Jan Schoenmakers 1967","link":"https://www.coldcasezaken.nl/jan-schoenmakers"},
   {"lat":53.199036,"lng":5.808656,"title":"De moord op Hinke van der Velde 1970","link":"https://www.coldcasezaken.nl/hinke-van-der-velde"},
   {"lat":52.400926,"lng":4.941733,"title":"De vermissing van Alwin Sterk 1972","link":"https://www.coldcasezaken.nl/alwin-sterk"},
@@ -45,7 +30,7 @@
   {"lat":51.337499,"lng":3.825393,"title":"De moord op Helena Mendonca, Guarda Lupe Espinal en Rosanna Hidalgo Manzuela 1987","link":"https://www.coldcasezaken.nl/helena-mendonca"},
   {"lat":51.576193,"lng":4.712502,"title":"De moord op Sjef Delahaije 1987","link":"https://www.coldcasezaken.nl/sjef-delahaije"},
   {"lat":52.012829,"lng":4.815627,"title":"De vermissing van Alie Spruit Roelofsen 1988","link":"https://www.coldcasezaken.nl/alie-spruit-roelofsen"},
-  {"lat":52.070652,"lng":4.267779,"title":"De moord op  Johannes Schrijvers 1988","link":"https://www.coldcasezaken.nl/johannes-schrijvers"},
+  {"lat":52.070652,"lng":4.267779,"title":"De moord op Johannes Schrijvers 1988","link":"https://www.coldcasezaken.nl/johannes-schrijvers"},
   {"lat":52.095079,"lng":4.333025,"title":"De moord op Alida Christiana Koopmans 1988","link":"https://www.coldcasezaken.nl/alida-christiana-koopmans"},
   {"lat":51.930482,"lng":4.502341,"title":"De moord op Chris Boelsen 1989","link":"https://www.coldcasezaken.nl/chris-boelsen"},
   {"lat":50.910171,"lng":6.075965,"title":"De moord op Yvonne Plasmans 1989","link":"https://www.coldcasezaken.nl/yvonne-plasmans"},
@@ -67,8 +52,4 @@
   {"lat":51.931933,"lng":4.497412,"title":"De moord op Maarten Nelisse 1991","link":"https://www.coldcasezaken.nl/maarten-nelisse"},
   {"lat":51.324254,"lng":3.850452,"title":"De moord op Saadet Secmen 1991","link":"https://www.coldcasezaken.nl/saadet-secmen"},
   {"lat":51.829560,"lng":4.702107,"title":"De moord op Vera van der Lee 1991","link":"https://www.coldcasezaken.nl/vera-van-der-lee-van-soldt"}
-]
-
-
-  /* Voeg hier extra cold cases toe, telkens als een nieuw object tussen de { } en gescheiden door een komma */
 ]
