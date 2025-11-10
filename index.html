@@ -14,28 +14,26 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // 1. Kaart instellen
+    // Kaart instellen
     var map = L.map('map').setView([52.1, 5.1], 7);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // 2. Cold cases laden vanuit JSON
+    // Cases laden vanuit JSON
     fetch("cases.json")
       .then(response => {
         if (!response.ok) throw new Error("HTTP-fout " + response.status);
         return response.json();
       })
       .then(coldCases => {
-        coldCases.forEach(function(caseItem) {
+        coldCases.forEach(caseItem => {
           L.marker([caseItem.lat, caseItem.lng])
             .addTo(map)
             .bindPopup(
-              `<div style="font-size:14px; line-height:1.4;">
-                 <strong>${caseItem.title}</strong><br>
-                 <a href="${caseItem.link}" target="_blank">Bekijk dossier</a>
-               </div>`
+              `<strong>${caseItem.title}</strong><br>
+               <a href="${caseItem.link}" target="_blank">Bekijk dossier</a>`
             );
         });
       })
