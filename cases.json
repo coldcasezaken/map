@@ -52,7 +52,7 @@
   {"lat":51.931933,"lng":4.497412,"title":"De moord op Maarten Nelisse 1991","link":"https://www.coldcasezaken.nl/maarten-nelisse"},
   {"lat":51.324254,"lng":3.850452,"title":"De moord op Saadet Secmen 1991","link":"https://www.coldcasezaken.nl/saadet-secmen"},
   {"lat":51.829560,"lng":4.702107,"title":"De moord op Vera van der Lee 1991","link":"https://www.coldcasezaken.nl/vera-van-der-lee-van-soldt"}
-    {"lat":52.061723,"lng":4.330217,"title":"De moord op Cornelia Bergen-Groenewold 1991","link":"https://www.coldcasezaken.nl/cornelia-van-den-bergen-groenewold"},
+  {"lat":52.061723,"lng":4.330217,"title":"De moord op Cornelia Bergen-Groenewold 1991","link":"https://www.coldcasezaken.nl/cornelia-van-den-bergen-groenewold"},
   {"lat":51.424745,"lng":5.302941,"title":"De moord op Gerrie Schellekens 1991","link":"http://coldcasezaken.nl/gerrie-schellekens"},
   {"lat":53.199195,"lng":5.434905,"title":"De dood van Bettus Louis Lemstra 1991","link":"https://www.coldcasezaken.nl/louis-lemstra"},
   {"lat":52.368474,"lng":4.627561,"title":"De moord op Theo Kroon 1991","link":"https://www.coldcasezaken.nl/theo-kroon"},
@@ -73,4 +73,5 @@
   {"lat":51.677567,"lng":5.804639,"title":"De moord op Mariëtte Peters 1992","link":"https://www.coldcasezaken.nl/mariette-peters"},
   {"lat":53.209842,"lng":5.784082,"title":"De moord op Roelof Steinvoorte 1992","link":"https://www.coldcasezaken.nl/roelof-steinvoorte"},
 ]
+
 
