@@ -211,7 +211,7 @@
   {"lat":50.348353,"lng":4.296553,"title":"De moord op Anne Beckmann 2009","link":"https://www.coldcasezaken.nl/anne-beckmann"},
   {"lat":51.218997,"lng":4.426926,"title":"De moord op Dan Dielis 2009","link":"https://www.coldcasezaken.nl/dan-dielis"},
   {"lat":53.208381,"lng":6.595790,"title":"De vermissing van Marian Kusters 2009","link":"https://www.coldcasezaken.nl/marian-kusters"},
-  {"lat":52.958092,"lng":52.958092,"title":"De vermissing van Christiaan Weststeijn 2010","link":"https://www.coldcasezaken.nl/christiaan-weststeijn"},
+  {"lat":52.958092,"lng":52.95809,"title":"De vermissing van Christiaan Weststeijn 2010","link":"https://www.coldcasezaken.nl/christiaan-weststeijn"},
   {"lat":51.927269,"lng":4.472548,"title":"De moord op Sandra Martinez Burbano 2010","link":"https://www.coldcasezaken.nl/sandra-martinez-burbano"},
   {"lat":-2.478699,"lng":-2.478699,"title":"De moord op Joel Bastiaens 2010","link":"https://www.coldcasezaken.nl/joel-bastiaens"},
   {"lat":51.387226,"lng":3.584305,"title":"De vermissing van Herman Ploegstra 2010","link":"https://www.coldcasezaken.nl/herman-ploegstra"},
@@ -241,6 +241,7 @@
   {"lat":50.639020,"lng":5.565612,"title":"De moord op Antoine Thys 2013","link":"https://www.coldcasezaken.nl/antoine-thys"},
   {"lat":51.827752,"lng":4.573166,"title":"De vermissing van Rebecca Groenendijk 2014","link":"https://www.coldcasezaken.nl/rebecca-groenendijk"}
 ]
+
 
 
 
