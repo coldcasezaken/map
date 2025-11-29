@@ -411,8 +411,12 @@
   {"lat":52.302590,"lng":4.968214,"title":"De vermissing van Sabrina Oosterbeek 2017 (geen sitedossier)","link":"https://www.coldcasezaken.nl/zaak-zonder-dossier"},
   {"lat":52.040068,"lng":4.324935,"title":"De vermissing van Mohamed Anaya 2018 (geen sitedossier)","link":"https://www.coldcasezaken.nl/zaak-zonder-dossier"},
   {"lat":52.253602,"lng":4.767016,"title":"De vermissing van Frederik Pallesen 2019 (geen sitedossier)","link":"https://www.coldcasezaken.nl/zaak-zonder-dossier"},
-  {"lat":51.982111,"lng":4.362262,"title":"De vermissing van Jakob Johan de Bruijn 2022 (geen sitedossier)","link":"https://www.coldcasezaken.nl/zaak-zonder-dossier"}
+  {"lat":51.982111,"lng":4.362262,"title":"De vermissing van Jakob Johan de Bruijn 2022 ","link":"https://www.coldcasezaken.nl/jakob-johan-de-bruijn"},
+  {"lat":51.827130,"lng":4.942457,"title":"De vermissing van Yoran Krol 2023","link":"https://www.coldcasezaken.nl/yoran-krol"},
+  {"lat":50.963108,"lng":5.713263,"title":"De moord op Angelique Hendrix 1990","link":"https://www.coldcasezaken.nl/angelique-hendrix"},
+  {"lat":51.568754,"lng":3.517343,"title":"De moord op Annie van der Poel 2019","link":"https://www.coldcasezaken.nl/annie-van-der-poel"}
 ]
+
 
 
 
