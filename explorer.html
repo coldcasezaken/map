@@ -1,1 +1,376 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Cold Case Explorer</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f4f4;
+        color: #222;
+    }
+
+    .header {
+        background: #111;
+        color: white;
+        padding: 32px 24px 28px;
+    }
+
+    .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .header h1 {
+        margin: 0 0 8px;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .header p {
+        margin: 0;
+        font-size: 16px;
+        opacity: .75;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .search {
+        flex: 1;
+        min-width: 0;
+        height: 48px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        padding: 0 16px;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .search:focus {
+        border-color: #111;
+    }
+
+    .count {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .cases {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .case {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+        transition: box-shadow .15s ease;
+    }
+
+    .case:hover {
+        box-shadow: 0 4px 14px rgba(0,0,0,.10);
+    }
+
+    .case-content {
+        padding: 20px;
+    }
+
+    .case-title {
+        margin: 0 0 14px;
+        font-size: 19px;
+        line-height: 1.3;
+    }
+
+    .case-title a {
+        color: #111;
+        text-decoration: none;
+    }
+
+    .case-title a:hover {
+        text-decoration: underline;
+    }
+
+    .case-location {
+        color: #777;
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+
+    .case-link {
+        display: inline-block;
+        background: #111;
+        color: white;
+        text-decoration: none;
+        padding: 10px 14px;
+        border-radius: 3px;
+        font-size: 14px;
+    }
+
+    .case-link:hover {
+        background: #333;
+    }
+
+    .status {
+        padding: 40px 20px;
+        text-align: center;
+        background: white;
+        border: 1px solid #ddd;
+    }
+
+    .no-results {
+        grid-column: 1 / -1;
+        padding: 50px 20px;
+        background: white;
+        border: 1px solid #ddd;
+        text-align: center;
+        color: #666;
+    }
+
+    @media (max-width: 900px) {
+        .cases {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .header {
+            padding: 26px 18px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        .container {
+            padding: 16px;
+        }
+
+        .controls {
+            display: block;
+        }
+
+        .search {
+            width: 100%;
+        }
+
+        .count {
+            margin-top: 10px;
+        }
+
+        .cases {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .case-content {
+            padding: 17px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>Cold Case Explorer</h1>
+        <p>Doorzoek de cold cases van Stichting Coldcasezaken</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="controls">
+        <input
+            type="search"
+            id="search"
+            class="search"
+            placeholder="Zoek op naam of plaats..."
+            autocomplete="off"
+        >
+
+        <div class="count" id="count">
+            Laden...
+        </div>
+    </div>
+
+    <div id="status" class="status">
+        Cold cases worden geladen...
+    </div>
+
+    <div id="cases" class="cases"></div>
+
+</main>
+
+<script>
+
+let allCases = [];
+
+const casesContainer = document.getElementById("cases");
+const status = document.getElementById("status");
+const searchInput = document.getElementById("search");
+const count = document.getElementById("count");
+
+
+function escapeHTML(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function renderCases(list) {
+
+    casesContainer.innerHTML = "";
+
+    if (!list.length) {
+
+        casesContainer.innerHTML = `
+            <div class="no-results">
+                Geen cold cases gevonden.
+            </div>
+        `;
+
+        count.textContent = "0 resultaten";
+        return;
+    }
+
+    list.forEach(caseItem => {
+
+        const title = escapeHTML(caseItem.title);
+        const link = escapeHTML(caseItem.link);
+
+        const latitude = caseItem.lat;
+        const longitude = caseItem.lng;
+
+        const card = document.createElement("article");
+        card.className = "case";
+
+        card.innerHTML = `
+            <div class="case-content">
+
+                <h2 class="case-title">
+                    <a href="${link}" target="_blank" rel="noopener">
+                        ${title}
+                    </a>
+                </h2>
+
+                <div class="case-location">
+                    Locatiegegevens beschikbaar
+                </div>
+
+                <a
+                    class="case-link"
+                    href="${link}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    Bekijk dossier
+                </a>
+
+            </div>
+        `;
+
+        casesContainer.appendChild(card);
+    });
+
+    count.textContent =
+        list.length + (list.length === 1 ? " resultaat" : " resultaten");
+}
+
+
+function filterCases() {
+
+    const search = searchInput.value
+        .toLowerCase()
+        .trim();
+
+    if (!search) {
+        renderCases(allCases);
+        return;
+    }
+
+    const filtered = allCases.filter(caseItem => {
+
+        const title = String(caseItem.title || "").toLowerCase();
+        const link = String(caseItem.link || "").toLowerCase();
+
+        return (
+            title.includes(search) ||
+            link.includes(search)
+        );
+    });
+
+    renderCases(filtered);
+}
+
+
+async function loadCases() {
+
+    try {
+
+        const response = await fetch("cases.json");
+
+        if (!response.ok) {
+            throw new Error("cases.json kon niet worden geladen.");
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error("Ongeldig cases.json formaat.");
+        }
+
+        allCases = data;
+
+        status.style.display = "none";
+
+        renderCases(allCases);
+
+    } catch (error) {
+
+        status.innerHTML = `
+            <strong>De cold cases konden niet worden geladen.</strong><br><br>
+            Controleer of cases.json beschikbaar is.
+        `;
+
+        console.error(error);
+    }
+}
+
+
+searchInput.addEventListener("input", filterCases);
+
+loadCases();
+
+</script>
+
+</body>
+</html>
