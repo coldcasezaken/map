@@ -1,56 +1,364 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Coldcase Kaart</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-  <style>
-    html,body{margin:0;padding:0;width:100%;height:100%;}
-    #map{height:100vh;width:100%;}
-    .marker-cluster{background:transparent!important;}
-    .marker-cluster div{
-      color:#fff!important;
-      font-weight:600!important;
-      border-radius:50%!important;
-      border:2px solid rgba(63,110,88,.55)!important;
-      box-shadow:0 2px 7px rgba(34,69,118,.16)!important;
-      text-align:center!important;
-    }
-    .cluster-small div{background:#7E9F8B!important;width:34px!important;height:34px!important;line-height:30px!important;}
-    .cluster-medium div{background:#5F866F!important;width:40px!important;height:40px!important;line-height:36px!important;}
-    .cluster-large div{background:#3F6E58!important;width:48px!important;height:48px!important;line-height:44px!important;}
-    .cc-dot{width:16px;height:16px;border-radius:50%;background:#C5322C;border:2px solid #fff;box-shadow:0 2px 7px rgba(34,69,118,.28);box-sizing:border-box;}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coldcase Kaart</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:#f2f4f2
+}
+
+#map{
+  height:100vh;
+  width:100%;
+}
+
+.leaflet-tile-pane{
+  filter:grayscale(.82)
+}
+
+.marker-cluster{
+  background:transparent!important
+}
+
+.marker-cluster div{
+  color:#fff!important;
+  font:600 12px/1 Arial,Helvetica,sans-serif!important;
+  text-align:center!important;
+  border-radius:50%!important;
+  border:0!important;
+  box-shadow:0 0 0 6px rgba(49,88,67,.24)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important
+}
+
+.cluster-small div{
+  background:#78978B!important;
+  width:34px!important;
+  height:34px!important
+}
+
+.cluster-medium div{
+  background:#58796D!important;
+  width:40px!important;
+  height:40px!important
+}
+
+.cluster-large div{
+  background:#3F5F56!important;
+  width:48px!important;
+  height:48px!important
+}
+
+.cc-dot{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#C5322C;
+  border:2px solid #fff;
+  box-sizing:border-box
+}
+
+.cc-custom-popup .leaflet-popup-content-wrapper{
+  width:170px!important;
+  padding:0!important;
+  background:#fff;
+  border:1px solid #E2E5E8;
+  border-radius:8px;
+  box-shadow:0 4px 14px rgba(24,33,43,.14);
+  overflow:visible
+}
+
+.cc-custom-popup .leaflet-popup-content{
+  width:170px!important;
+  margin:0!important
+}
+
+.cc-custom-popup .leaflet-popup-tip{
+  width:12px;
+  height:12px;
+  background:#fff;
+  box-shadow:none
+}
+
+.cc-popup-inner{
+  position:relative;
+  padding:10px 11px 11px;
+  font-family:Arial,Helvetica,sans-serif
+}
+
+.cc-popup-type{
+  margin:0 22px 4px 0;
+  color:#C5322C;
+  font-size:10px;
+  line-height:13px;
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase
+}
+
+.cc-popup-title{
+  margin:0 18px 5px 0;
+  color:#224576;
+  font-size:16px;
+  line-height:20px;
+  font-weight:700
+}
+
+.cc-popup-year{
+  margin:0 0 4px;
+  color:#224576;
+  font-size:13px;
+  line-height:17px;
+  font-weight:700
+}
+
+.cc-popup-place{
+  margin:0 0 9px;
+  color:#3F4B57;
+  font-size:13px;
+  line-height:17px;
+  font-weight:400
+}
+
+.cc-popup-link{
+  color:#224576;
+  font-size:12px;
+  line-height:15px;
+  font-weight:500;
+  text-decoration:underline
+}
+
+.cc-popup-close{
+  position:absolute;
+  right:5px;
+  top:3px;
+  width:20px;
+  height:20px;
+  border:0;
+  background:transparent;
+  color:#68778A;
+  font-size:19px;
+  font-weight:300;
+  line-height:20px;
+  padding:0;
+  cursor:pointer
+}
+</style>
 </head>
+
 <body>
+
 <div id="map"></div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
 <script>
-var map=L.map('map').setView([52.1,5.1],7);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
-function clusterClass(n){return n<10?'cluster-small':(n<30?'cluster-medium':'cluster-large');}
+(function(){
+
+var map=L.map('map',{
+  zoomControl:true,
+  preferCanvas:true,
+  minZoom:6,
+  maxZoom:18,
+  zoomSnap:.5
+}).setView([52.15,5.30],7.5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© OpenStreetMap contributors',
+  maxZoom:19
+}).addTo(map);
+
+function clusterClass(n){
+  return n<10
+    ?'cluster-small'
+    :(n<30?'cluster-medium':'cluster-large')
+}
+
+function esc(v){
+  return String(v==null?'':v).replace(/[&<>"']/g,function(ch){
+    return {
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[ch]
+  })
+}
+
+function cleanTitle(v){
+  return String(v||'Onbekende cold case')
+    .replace(/\s*\(geen sitedossier\)\s*/ig,'')
+    .replace(/\s+(19|20)\d{2}\s*$/i,'')
+    .trim()
+}
+
+function popupHtml(c){
+
+  var title=cleanTitle(c.title||c.name);
+  var type=c.type||c.category||'COLD CASE';
+  var year=c.year||'';
+  var place=c.place||'';
+  var href=c.link||c.url||'';
+
+  var link=(href&&href.indexOf('/zaak-zonder-dossier')===-1)
+    ?'<a class="cc-popup-link" href="'+esc(href)+'" target="_blank" rel="noopener">Bekijk dossier »</a>'
+    :'';
+
+  return '<div class="cc-popup-inner">'+
+    '<button class="cc-popup-close" type="button" aria-label="Sluiten">×</button>'+
+    '<div class="cc-popup-type">'+esc(type)+'</div>'+
+    '<div class="cc-popup-title">'+esc(title)+'</div>'+
+    (year?'<div class="cc-popup-year">'+esc(year)+'</div>':'')+
+    (place?'<div class="cc-popup-place">'+esc(place)+'</div>':'')+
+    link+
+    '</div>'
+}
+
 var clusters=L.markerClusterGroup({
   showCoverageOnHover:false,
   spiderfyOnMaxZoom:true,
   zoomToBoundsOnClick:true,
   maxClusterRadius:45,
+  disableClusteringAtZoom:12,
+
   iconCreateFunction:function(cluster){
+
     var n=cluster.getChildCount();
-    return L.divIcon({html:'<div>'+n+'</div>',className:'marker-cluster '+clusterClass(n),iconSize:[n<10?34:n<30?40:48,n<10?34:n<30?40:48]});
+
+    var size=n<10
+      ?34
+      :(n<30?40:48);
+
+    return L.divIcon({
+      html:'<div>'+n+'</div>',
+      className:'marker-cluster '+clusterClass(n),
+      iconSize:[size,size]
+    })
   }
 });
-fetch('cases.json').then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(cases){
+
+fetch('cases.json')
+
+.then(function(r){
+
+  if(!r.ok)
+    throw new Error('cases.json HTTP '+r.status);
+
+  return r.json()
+
+})
+
+.then(function(raw){
+
+  var cases=Array.isArray(raw)
+    ?raw
+    :(Array.isArray(raw.cases)
+      ?raw.cases
+      :(Array.isArray(raw.data)
+        ?raw.data
+        :(Array.isArray(raw.features)
+          ?raw.features
+          :[])));
+
   cases.forEach(function(c){
-    var icon=L.divIcon({className:'',html:'<div class="cc-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]});
-    var marker=L.marker([c.lat,c.lng],{icon:icon});
-    marker.bindPopup('<strong>'+String(c.title||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</strong><br><a href="'+c.link+'" target="_blank" rel="noopener">Bekijk dossier</a>');
+
+    var lat=Number(
+      c.lat!=null
+        ?c.lat
+        :c.latitude
+    );
+
+    var lng=Number(
+      c.lng!=null
+        ?c.lng
+        :(c.lon!=null
+          ?c.lon
+          :c.longitude)
+    );
+
+    if(!Number.isFinite(lat)||!Number.isFinite(lng))
+      return;
+
+    var marker=L.marker(
+      [lat,lng],
+      {
+        icon:L.divIcon({
+          className:'',
+          html:'<div class="cc-dot"></div>',
+          iconSize:[16,16],
+          iconAnchor:[8,8]
+        })
+      }
+    );
+
+    marker.bindPopup(
+      popupHtml(c),
+      {
+        className:'cc-custom-popup',
+        closeButton:false,
+        autoClose:true,
+        closeOnClick:true,
+        autoPan:true,
+        autoPanPadding:[18,18],
+        offset:[0,10],
+        maxWidth:220,
+        minWidth:170
+      }
+    );
+
+    marker.on('popupopen',function(e){
+
+      var btn=e.popup
+        .getElement()
+        .querySelector('.cc-popup-close');
+
+      if(btn){
+
+        btn.onclick=function(){
+          map.closePopup(e.popup)
+        }
+
+      }
+
+    });
+
     clusters.addLayer(marker);
+
   });
+
   map.addLayer(clusters);
-}).catch(function(err){console.error('Fout bij laden cases.json:',err);});
+
+  setTimeout(function(){
+    map.invalidateSize()
+  },100);
+
+})
+
+.catch(function(err){
+
+  console.error(
+    'Fout bij laden cases.json:',
+    err
+  )
+
+});
+
+})();
 </script>
+
 </body>
 </html>
