@@ -567,18 +567,34 @@ body.cc-list-mode .list-top {
     sortCards();
   }
   function filterCards(){
-    var q=(document.getElementById('q').value||'').toLowerCase().trim();
-    var y=document.getElementById('year').value;
-    var t=document.getElementById('type').value;
+    var qEl=document.getElementById('q'), yEl=document.getElementById('year'), tEl=document.getElementById('type');
+    var q=(qEl&&qEl.value||'').toLowerCase().trim();
+    var y=yEl?yEl.value:'';
+    var t=tEl?tEl.value:'';
     var cards=document.querySelectorAll('#grid .cc-card'), n=0;
     for(var i=0;i<cards.length;i++){
-      var c=cards[i], name=(c.getAttribute('data-name')||'').toLowerCase(), place=(c.getAttribute('data-place')||'').toLowerCase();
-      var cy=parseInt(c.getAttribute('data-year')||'0',10), ok=(q===''||name.indexOf(q)>-1||place.indexOf(q)>-1);
-      if(y){var yy=parseInt(y,10); ok=ok && (yy===0 ? (cy>0 && cy<1950) : cy>=yy && cy<=yy+9);}
-      if(t) ok=ok&&c.getAttribute('data-type')===t;
-      c.style.display=ok?'flex':'none'; if(ok)n++;
+      var c=cards[i];
+      var name=(c.getAttribute('data-name')||'').toLowerCase();
+      var place=(c.getAttribute('data-place')||'').toLowerCase();
+      var cy=parseInt(c.getAttribute('data-year')||'0',10);
+      var ok=(q===''||name.indexOf(q)>-1||place.indexOf(q)>-1);
+      if(y){
+        var yy=parseInt(y,10);
+        ok=ok && (yy===0 ? (cy>0 && cy<1950) : cy>=yy && cy<=yy+9);
+      }
+      if(t) ok=ok && c.getAttribute('data-type')===t;
+      c.hidden=!ok;
+      c.style.display=ok?'flex':'none';
+      if(ok)n++;
     }
-    document.getElementById('count').textContent=n+' zaken';
+    var count=document.getElementById('count');
+    if(count) count.textContent=n+' zaken';
+    var grid=document.getElementById('grid');
+    if(grid){
+      grid.style.display='none';
+      void grid.offsetHeight;
+      grid.style.display='grid';
+    }
   }
   function surnameSortKey(name){
     var s=String(name||'').replace(/\s+/g,' ').trim();
@@ -606,20 +622,8 @@ body.cc-list-mode .list-top {
   }
   function clearFilters(){document.getElementById('q').value='';document.getElementById('year').value='';document.getElementById('type').value='';document.getElementById('sort').value='Nieuwste eerst';sortCards();}
   window.filterCards=filterCards; window.sortCards=sortCards; window.clearFilters=clearFilters;
-  /* Mobile filter binding: use native input/change events as well as the inline handlers. */
-  (function(){
-    var q=document.getElementById('q');
-    var year=document.getElementById('year');
-    var type=document.getElementById('type');
-    var sort=document.getElementById('sort');
-    var clear=document.querySelector('.filters button');
-    if(q) q.addEventListener('input',filterCards,{passive:true});
-    if(year) year.addEventListener('change',filterCards);
-    if(type) type.addEventListener('change',filterCards);
-    if(sort) sort.addEventListener('change',sortCards);
-    if(clear) clear.addEventListener('click',clearFilters);
-  })();
-
+  /* Reliable filter events for desktop and mobile. */
+  (function(){var q=document.getElementById('q'),year=document.getElementById('year'),type=document.getElementById('type'),sort=document.getElementById('sort'),clear=document.querySelector('.filters button');if(q){q.oninput=filterCards;q.onkeyup=filterCards;}if(year){year.onchange=filterCards;year.oninput=filterCards;}if(type){type.onchange=filterCards;type.oninput=filterCards;}if(sort){sort.onchange=sortCards;sort.oninput=sortCards;}if(clear)clear.onclick=clearFilters;})();
 
   var map=null, clusterGroup=null, activeMarker=null, activePopup=null;
   function esc(v){return String(v==null?'':v).replace(/&/g,'&').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
