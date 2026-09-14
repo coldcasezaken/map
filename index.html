@@ -721,7 +721,7 @@ body.cc-list-mode .list-top {
   window.addEventListener('resize',function(){setTimeout(reportExplorerHeight,80);});
 
   function showMap(){document.body.classList.remove('cc-list-mode');document.body.classList.add('cc-map-mode');document.getElementById('ccMapButton').classList.add('active');document.getElementById('ccListButton').classList.remove('active');document.getElementById('ccMapContent').style.display='block';document.getElementById('ccListContent').style.display='none';initMap();setTimeout(function(){if(map)map.invalidateSize()},120)}
-  function showList(){document.body.classList.remove('cc-map-mode');document.body.classList.add('cc-list-mode');document.getElementById('ccMapButton').classList.remove('active');document.getElementById('ccListButton').classList.add('active');document.getElementById('ccMapContent').style.display='none';document.getElementById('ccListContent').style.display='block';hideCard();}
+  function showList(){document.body.classList.remove('cc-map-mode');document.body.classList.add('cc-list-mode');document.getElementById('ccMapButton').classList.remove('active');document.getElementById('ccListButton').classList.add('active');document.getElementById('ccMapContent').style.display='none';document.getElementById('ccListContent').style.display='block';hideCard();reportExplorerHeight();setTimeout(reportExplorerHeight,120);setTimeout(reportExplorerHeight,500);}
   document.getElementById('ccMapButton').onclick=showMap;document.getElementById('ccListButton').onclick=showList;
   document.body.classList.add('cc-map-mode');document.body.classList.remove('cc-list-mode');
   initMap();
