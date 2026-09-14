@@ -540,13 +540,13 @@ body.cc-list-mode .list-top {
   }
   function typeKey(type){return String(type||'').toLowerCase().replace(/[^a-z]/g,'').replace('onbekendedoden','onbekendedoden')}
   function renderAllCases(cases){
-    /* Kaart = alle markers. Lijst = alleen echte dossierpagina's. */
+    /* Kaart = alle markers. Lijst = alle geldige cases uit cases.json. */
     var seenListLinks=Object.create(null);
     var listCases=(Array.isArray(cases)?cases:[]).filter(function(c){
       var wanted=c&&(c.link||c.url||'')||'';
-      var meta=caseMetaFor(c);
-      if(!meta)return false;
-      var key=popupUrlKey(meta.link||wanted||meta.title);
+      if(!wanted)return false;
+      var key=popupUrlKey(wanted);
+      if(!key) key=String(c.title||c.name||'').toLowerCase().trim();
       if(seenListLinks[key])return false;
       seenListLinks[key]=true;
       return true;
