@@ -544,10 +544,9 @@ body.cc-list-mode .list-top {
     var seenListLinks=Object.create(null);
     var listCases=(Array.isArray(cases)?cases:[]).filter(function(c){
       var wanted=c&&(c.link||c.url||'')||'';
-      if(!wanted || /\/zaak-zonder-dossier(?:$|\?)/i.test(wanted))return false;
       var meta=caseMetaFor(c);
       if(!meta)return false;
-      var key=popupUrlKey(meta.link||wanted);
+      var key=popupUrlKey(meta.link||wanted||meta.title);
       if(seenListLinks[key])return false;
       seenListLinks[key]=true;
       return true;
