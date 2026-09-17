@@ -659,9 +659,8 @@ if(d.href){var a=document.createElement('a');a.className='cc-link';a.href=d.href
       if(wanted && a && normalizeUrl(a.getAttribute('href'))===wanted){byName=card;break;}
       if(!byName && cname && cardName && (cardName===cname || cname.indexOf(cardName)>-1 || cardName.indexOf(cname)>-1))byName=card;
     }
-var noDossier=href&&href.indexOf('/zaak-zonder-dossier')!==-1;
-var link=href?'<a class="cc-leaflet-link" href="'+esc(href)+'" target="_top" rel="noopener">'+(noDossier?'Geef een tip »':'Bekijk dossier »')+'</a>':'';    return {category:c.type||'',place:c.place||c.location||c.city||'',year:c.year||'',link:c.link||c.url||''};
-  }
+if(byName){var link=byName.querySelector('.cc-link');return {category:(byName.querySelector('.cc-category')||{}).textContent||'',place:(byName.querySelector('.cc-place')||{}).textContent||'',year:byName.getAttribute('data-year')||'',link:link?link.getAttribute('href'):''};}
+return {category:c.type||'',place:c.place||c.location||c.city||'',year:c.year||'',link:c.link||c.url||''};  }
   function clusterClass(n){return n<10?'cluster-small':(n<30?'cluster-medium':'cluster-large')}
   function clusterSize(n){return n<10?38:(n<30?50:65)}
   var hoverTimer=null, popupPinned=false, popupHover=false, markerHover=false;
@@ -698,8 +697,7 @@ var link=href?'<a class="cc-leaflet-link" href="'+esc(href)+'" target="_top" rel
     var d=getListDetails(c), title=String(c.title||c.name||'Onbekende cold case').replace(/\s*\(geen sitedossier\)\s*/ig,'').replace(/\s+(19|20)\d{2}\s*$/i,'').trim();
     var type=d&&d.category?d.category:(c.type||''),year=d&&d.year?d.year:(c.year||''),place=d&&d.place?d.place:(c.place||''),meta=caseMetaFor(c),href=(meta&&meta.link)||c.link||c.url||(d&&d.link)||'',image=cleanImageUrl(getCardImage(c));
     var photo=image?'<img class="cc-leaflet-photo" src="'+esc(image)+'" alt="">':'';
-    var link=(href&&href.indexOf('/zaak-zonder-dossier')===-1)?'<a class="cc-leaflet-link" href="'+esc(href)+'" target="_top" rel="noopener">Bekijk dossier »</a>':'';
-    return '<div class="cc-popup-inner">'+photo+'<div class="cc-leaflet-type">'+esc(type)+'</div><div class="cc-leaflet-title">'+esc(title)+'</div>'+(year?'<div class="cc-leaflet-year">'+esc(year)+'</div>':'')+(place?'<div class="cc-leaflet-place">'+esc(place)+'</div>':'')+link+'</div>';
+var noDossier=href&&href.indexOf('/zaak-zonder-dossier')!==-1;var link=href?'<a class="cc-leaflet-link" href="'+esc(href)+'" target="_top" rel="noopener">'+(noDossier?'Geef een tip »':'Bekijk dossier »')+'</a>':'';    return '<div class="cc-popup-inner">'+photo+'<div class="cc-leaflet-type">'+esc(type)+'</div><div class="cc-leaflet-title">'+esc(title)+'</div>'+(year?'<div class="cc-leaflet-year">'+esc(year)+'</div>':'')+(place?'<div class="cc-leaflet-place">'+esc(place)+'</div>':'')+link+'</div>';
   }
   function bindPopupHover(){if(!activePopup)return;var el=activePopup.getElement();if(!el)return;el.onmouseenter=function(){popupHover=true;cancelHoverClose();};el.onmouseleave=function(){popupHover=false;scheduleHoverClose();};}
   function showCard(c,marker,pin){cancelHoverClose();if(activePopup&&map)map.closePopup(activePopup);activeMarker=marker;popupPinned=!!pin;activePopup=L.popup({className:'cc-custom-leaflet-popup',closeButton:false,autoClose:false,closeOnClick:false,autoPan:true,autoPanPadding:[18,18],offset:[0,10],maxWidth:228,minWidth:170}).setLatLng(marker.getLatLng()).setContent(popupHtml(c)).openOn(map);setTimeout(bindPopupHover,0);}
