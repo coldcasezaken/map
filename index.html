@@ -659,8 +659,8 @@ if(d.href){var a=document.createElement('a');a.className='cc-link';a.href=d.href
       if(wanted && a && normalizeUrl(a.getAttribute('href'))===wanted){byName=card;break;}
       if(!byName && cname && cardName && (cardName===cname || cname.indexOf(cardName)>-1 || cardName.indexOf(cname)>-1))byName=card;
     }
-    if(byName){var link=byName.querySelector('.cc-link');return {category:(byName.querySelector('.cc-category')||{}).textContent||'',place:(byName.querySelector('.cc-place')||{}).textContent||'',year:byName.getAttribute('data-year')||'',link:link?link.getAttribute('href'):''};}
-    return {category:c.type||'',place:c.place||c.location||c.city||'',year:c.year||'',link:c.link||c.url||''};
+var noDossier=href&&href.indexOf('/zaak-zonder-dossier')!==-1;
+var link=href?'<a class="cc-leaflet-link" href="'+esc(href)+'" target="_top" rel="noopener">'+(noDossier?'Geef een tip »':'Bekijk dossier »')+'</a>':'';    return {category:c.type||'',place:c.place||c.location||c.city||'',year:c.year||'',link:c.link||c.url||''};
   }
   function clusterClass(n){return n<10?'cluster-small':(n<30?'cluster-medium':'cluster-large')}
   function clusterSize(n){return n<10?38:(n<30?50:65)}
