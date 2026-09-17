@@ -568,7 +568,7 @@ var key=wanted.indexOf('/zaak-zonder-dossier')!==-1
       var h=document.createElement('h3'); h.className='cc-title'; h.textContent=d.title; content.appendChild(h);
       if(d.place){var pl=document.createElement('div');pl.className='cc-place';pl.textContent=d.place;content.appendChild(pl)}
       if(d.year){var dt=document.createElement('div');dt.className='cc-date';dt.textContent=d.year;content.appendChild(dt)}
-if(d.href){var a=document.createElement('a');a.className='cc-link';a.href=d.href;a.target='_top';a.rel='noopener';var noDossier=d.href.indexOf('/zaak-zonder-dossier')!==-1;a.textContent=noDossier?'Geef een tip »':'Bekijk dossier »';a.setAttribute('aria-label',noDossier?'Geef een tip':'Bekijk dossier');content.appendChild(a)}    });
+if(d.href){var a=document.createElement('a');a.className='cc-link';a.href=d.href;a.target='_top';a.rel='noopener';var noDossier=d.href.indexOf('/zaak-zonder-dossier')!==-1;a.textContent=noDossier?'Geef een tip »':'Bekijk dossier »';a.setAttribute('aria-label',noDossier?'Geef een tip':'Bekijk dossier');content.appendChild(a)} card.appendChild(photo); card.appendChild(content); frag.appendChild(card);   });
     grid.innerHTML=''; grid.appendChild(frag);
     CASES_READY=true;
     filterCards();
