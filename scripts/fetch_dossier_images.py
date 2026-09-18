@@ -2,6 +2,7 @@ import json
 import os
 import time
 import urllib.request
+from collections import Counter
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
@@ -51,7 +52,6 @@ class ImageParser(HTMLParser):
             return
 
         image = image_sources[0]
-        alt = attrs_dict.get("alt", "")
 
         parents = []
 
@@ -67,7 +67,7 @@ class ImageParser(HTMLParser):
         self.images.append(
             {
                 "src": image,
-                "alt": alt,
+                "alt": attrs_dict.get("alt", ""),
                 "width": attrs_dict.get("width", ""),
                 "height": attrs_dict.get("height", ""),
                 "class": attrs_dict.get("class", ""),
@@ -113,50 +113,372 @@ def fetch_page(url):
         )
 
 
-def print_context(item):
+def number(value):
 
-    print("  CONTEXT:")
-
-    parents = item.get("parents", [])
-
-    for parent in parents[-8:]:
-
-        tag = parent.get("tag", "")
-        element_id = parent.get("id", "")
-        element_class = parent.get("class", "")
-
-        line = "    <" + tag
-
-        if element_id:
-            line += ' id="' + element_id + '"'
-
-        if element_class:
-            line += ' class="' + element_class + '"'
-
-        line += ">"
-
-        print(line)
+    try:
+        return float(value)
+    except Exception:
+        return 0
 
 
-def find_image(page_url, html):
+def normalise_url(url):
 
-    parser = ImageParser()
-    parser.feed(html)
+    parsed = urlparse(url)
+
+    # Queryparameters verwijderen zodat dezelfde afbeelding
+    # met bijvoorbeeld verschillende resize-parameters
+    # als dezelfde bron wordt gezien.
+    return (
+        parsed.scheme.lower()
+        + "://"
+        + parsed.netloc.lower()
+        + parsed.path
+    )
+
+
+def is_social_or_tracking(url):
+
+    text = url.lower()
+
+    unwanted_domains = [
+        "facebook.com",
+        "instagram.com",
+        "linkedin.com",
+        "youtube.com",
+        "google-analytics.com",
+    ]
+
+    for domain in unwanted_domains:
+
+        if domain in text:
+            return True
+
+    return False
+
+
+def has_unwanted_filename(url):
+
+    text = url.lower()
+
+    unwanted = [
+        "logo",
+        "favicon",
+        "sprite",
+        "placeholder",
+        "marker",
+        "cluster",
+        "cookie",
+        "tijdlijn",
+        "timeline",
+    ]
+
+    for word in unwanted:
+
+        if word in text:
+            return True
+
+    return False
+
+
+def is_header_image(item):
+
+    for parent in item.get("parents", []):
+
+        parent_class = parent.get(
+            "class",
+            ""
+        ).lower()
+
+        parent_id = parent.get(
+            "id",
+            ""
+        ).lower()
+
+        combined = (
+            parent_class
+            + " "
+            + parent_id
+        )
+
+        if (
+            "header" in combined
+            or "mobile-logo" in combined
+            or "topbar" in combined
+        ):
+            return True
+
+    return False
+
+
+def is_content_image(item):
+
+    combined = ""
+
+    for parent in item.get(
+        "parents",
+        []
+    ):
+
+        combined += (
+            " "
+            + parent.get("class", "")
+            + " "
+            + parent.get("id", "")
+        ).lower()
+
+    combined += (
+        " "
+        + item.get("class", "")
+        + " "
+        + item.get("id", "")
+    ).lower()
+
+    return (
+        "jw-element-image" in combined
+    )
+
+
+def score_candidate(
+    item,
+    case_title,
+    duplicate_urls
+):
+
+    url = item["url"]
+    alt = item.get("alt", "")
+
+    width = number(
+        item.get("width")
+    )
+
+    height = number(
+        item.get("height")
+    )
+
+    score = 0
+    reasons = []
+
+    # -------------------------------------------------
+    # Technische uitsluitingen
+    # -------------------------------------------------
+
+    if is_social_or_tracking(url):
+
+        return -1000, [
+            "social/tracking"
+        ]
+
+    if is_header_image(item):
+
+        return -1000, [
+            "header/logo"
+        ]
+
+    if width == 1 and height == 1:
+
+        return -1000, [
+            "1x1 tracking pixel"
+        ]
+
+    if width and height:
+
+        if width < 200 or height < 200:
+
+            return -1000, [
+                "te klein"
+            ]
+
+    # -------------------------------------------------
+    # JouwWeb content-afbeelding
+    # -------------------------------------------------
+
+    if is_content_image(item):
+
+        score += 20
+
+        reasons.append(
+            "JouwWeb content-afbeelding"
+        )
+
+    # -------------------------------------------------
+    # Afmetingen
+    # -------------------------------------------------
+
+    area = width * height
+
+    if area >= 500000:
+
+        score += 20
+
+        reasons.append(
+            "grote afbeelding"
+        )
+
+    elif area >= 250000:
+
+        score += 10
+
+        reasons.append(
+            "voldoende groot"
+        )
+
+    # -------------------------------------------------
+    # Gedeelde afbeelding
+    # -------------------------------------------------
+
+    if duplicate_urls.get(
+        normalise_url(url),
+        0
+    ) > 1:
+
+        score -= 80
+
+        reasons.append(
+            "komt bij meerdere dossiers voor"
+        )
+
+    # -------------------------------------------------
+    # Bestandsnaam
+    # -------------------------------------------------
+
+    if has_unwanted_filename(url):
+
+        score -= 100
+
+        reasons.append(
+            "technische/tijdlijn-bestandsnaam"
+        )
+
+    # -------------------------------------------------
+    # ALT-tekst
+    # -------------------------------------------------
+
+    alt_lower = alt.lower()
+    title_lower = case_title.lower()
+
+    # Zoek woorden uit de titel in de alt-tekst.
+    title_words = [
+        word.strip(
+            ".,:;!?()[]{}"
+        )
+        for word in title_lower.split()
+        if len(word) >= 4
+    ]
+
+    matching_words = 0
+
+    for word in title_words:
+
+        if word in alt_lower:
+
+            matching_words += 1
+
+    if matching_words:
+
+        score += (
+            matching_words * 20
+        )
+
+        reasons.append(
+            "alt-tekst past bij dossier"
+        )
+
+    # -------------------------------------------------
+    # Portret/hoofdbeeld verhouding
+    # -------------------------------------------------
+
+    if width and height:
+
+        ratio = width / height
+
+        if 0.55 <= ratio <= 1.15:
+
+            score += 15
+
+            reasons.append(
+                "geschikte portretverhouding"
+            )
+
+    return score, reasons
+
+
+def choose_best_image(
+    case,
+    images,
+    duplicate_urls
+):
+
+    candidates = []
+
+    title = str(
+        case.get("title")
+        or case.get("name")
+        or ""
+    )
+
+    for item in images:
+
+        score, reasons = score_candidate(
+            item,
+            title,
+            duplicate_urls
+        )
+
+        item["score"] = score
+        item["reasons"] = reasons
+
+        if score > 0:
+
+            candidates.append(item)
+
+    candidates.sort(
+        key=lambda item: item["score"],
+        reverse=True
+    )
+
+    return candidates
+
+
+def print_images(
+    case,
+    images,
+    duplicate_urls
+):
+
+    title = str(
+        case.get("title")
+        or case.get("name")
+        or ""
+    )
 
     print("")
-    print("=== AFBEELDINGEN GEVONDEN ===")
-    print(f"Pagina: {page_url}")
-    print(f"Aantal: {len(parser.images)}")
+    print(
+        "=== AFBEELDINGEN GEVONDEN ==="
+    )
+
+    print(
+        f"Dossier: {title}"
+    )
+
+    print(
+        f"Pagina: {case.get('link', '')}"
+    )
+
+    print(
+        f"Aantal: {len(images)}"
+    )
+
     print("")
 
     for number, item in enumerate(
-        parser.images,
+        images,
         1
     ):
 
-        url = urljoin(
-            page_url,
-            item["src"]
+        score, reasons = score_candidate(
+            item,
+            title,
+            duplicate_urls
         )
 
         print(
@@ -164,19 +486,11 @@ def find_image(page_url, html):
         )
 
         print(
-            f"URL    : {url}"
+            f"URL    : {item['url']}"
         )
 
         print(
             f"ALT    : {item['alt']}"
-        )
-
-        print(
-            f"CLASS  : {item['class']}"
-        )
-
-        print(
-            f"ID     : {item['id']}"
         )
 
         print(
@@ -187,21 +501,60 @@ def find_image(page_url, html):
             f"HEIGHT : {item['height']}"
         )
 
-        print_context(item)
+        print(
+            f"SCORE  : {score}"
+        )
+
+        if reasons:
+
+            print(
+                "REDENEN: "
+                + ", ".join(reasons)
+            )
+
+        else:
+
+            print(
+                "REDENEN: geen"
+            )
 
         print("")
 
-    print(
-        "=== EINDE AFBEELDINGEN ==="
-    )
 
-    print("")
+def scan_case(case):
 
-    # DIAGNOSTISCHE TEST:
-    # Bewust geen afbeelding kiezen.
-    # Er wordt niets aan cases.json toegevoegd.
-    return None
+    link = str(
+        case.get("link")
+        or ""
+    ).strip()
 
+    html = fetch_page(link)
+
+    parser = ImageParser()
+
+    parser.feed(html)
+
+    images = []
+
+    for item in parser.images:
+
+        url = urljoin(
+            link,
+            item["src"]
+        )
+
+        item = dict(item)
+
+        item["url"] = url
+
+        images.append(item)
+
+    return images
+
+
+# -----------------------------------------------------
+# cases.json laden
+# -----------------------------------------------------
 
 with open(
     CASES_FILE,
@@ -212,13 +565,17 @@ with open(
     cases = json.load(file)
 
 
-# Alleen deze drie dossiers testen.
+# -----------------------------------------------------
+# Alleen de drie testdossiers
+# -----------------------------------------------------
+
 only = os.environ.get(
     "ONLY_SLUGS",
     ""
 ).strip().lower()
 
 if not only:
+
     only = (
         "john-yellowley,"
         "ingrid-hakkert,"
@@ -234,21 +591,33 @@ wanted = [
 
 
 print("")
-print("=== DIAGNOSTISCHE TEST ===")
+print(
+    "=== AUTOMATISCHE FOTOSELECTIE — DIAGNOSE ==="
+)
+
 print(
     "Te onderzoeken dossiers:",
     ", ".join(wanted)
 )
+
 print("")
 
 
-changed = 0
+# -----------------------------------------------------
+# Eerst alle dossiers scannen.
+#
+# Dat doen we expres vóór het kiezen van foto's,
+# zodat we gedeelde afbeeldingen kunnen herkennen.
+# -----------------------------------------------------
+
+scanned = []
 
 
 for case in cases:
 
     link = str(
-        case.get("link") or ""
+        case.get("link")
+        or ""
     ).strip()
 
     if not link:
@@ -274,38 +643,153 @@ for case in cases:
 
     try:
 
-        html = fetch_page(link)
+        images = scan_case(case)
 
-        image = find_image(
-            link,
-            html
+        scanned.append(
+            {
+                "case": case,
+                "slug": slug,
+                "images": images,
+            }
         )
-
-        # In deze diagnostische test wordt
-        # bewust niets opgeslagen.
-        if image:
-
-            print(
-                f"[FOUND] {image}"
-            )
-
-        else:
-
-            print(
-                "[NONE] Geen afbeelding automatisch gekozen"
-            )
 
     except Exception as error:
 
         print(
-            f"[ERROR] {error}"
+            f"[ERROR] {slug}: {error}"
         )
 
     time.sleep(1)
 
 
+# -----------------------------------------------------
+# Bepaal welke afbeeldingsbronnen gedeeld worden
+# -----------------------------------------------------
+
+all_urls = []
+
+for result in scanned:
+
+    for item in result["images"]:
+
+        if is_social_or_tracking(
+            item["url"]
+        ):
+
+            continue
+
+        all_urls.append(
+            normalise_url(
+                item["url"]
+            )
+        )
+
+
+duplicate_urls = Counter(
+    all_urls
+)
+
+
 print("")
 print(
-    f"Klaar. {changed} foto('s) toegevoegd."
+    "=== GEDEELDE AFBEELDINGEN ==="
 )
+
+for url, count in duplicate_urls.items():
+
+    if count > 1:
+
+        print(
+            f"[SHARED {count}x] {url}"
+        )
+
+print("")
+
+
+# -----------------------------------------------------
+# Nu per dossier de beste kandidaat bepalen
+# -----------------------------------------------------
+
+for result in scanned:
+
+    case = result["case"]
+    slug = result["slug"]
+    images = result["images"]
+
+    print("")
+    print(
+        "========================================"
+    )
+
+    print(
+        f"DOSSIER: {slug}"
+    )
+
+    print(
+        "========================================"
+    )
+
+    print_images(
+        case,
+        images,
+        duplicate_urls
+    )
+
+    candidates = choose_best_image(
+        case,
+        images,
+        duplicate_urls
+    )
+
+    if not candidates:
+
+        print(
+            "[RESULTAAT] GEEN FOTO"
+        )
+
+        print(
+            "Geen betrouwbare kandidaat gevonden."
+        )
+
+        continue
+
+    best = candidates[0]
+
+    print(
+        "[RESULTAAT] AUTOMATISCH GEKOZEN"
+    )
+
+    print(
+        f"URL   : {best['url']}"
+    )
+
+    print(
+        f"SCORE : {best['score']}"
+    )
+
+    print(
+        "REDENEN: "
+        + ", ".join(
+            best["reasons"]
+        )
+    )
+
+    print("")
+
+
+# -----------------------------------------------------
+# BELANGRIJK:
+#
+# Deze versie schrijft NIETS naar cases.json.
+# -----------------------------------------------------
+
+print("")
+print(
+    "=== TEST KLAAR ==="
+)
+
+print(
+    "Er zijn geen wijzigingen opgeslagen in cases.json."
+)
+
 print("")
