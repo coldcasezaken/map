@@ -212,15 +212,18 @@ with open(
     cases = json.load(file)
 
 
-# Als Actions geen ONLY_SLUGS meegeeft,
-# testen we standaard alleen John en Ingrid.
+# Alleen deze drie dossiers testen.
 only = os.environ.get(
     "ONLY_SLUGS",
     ""
 ).strip().lower()
 
 if not only:
-    only = "john-yellowley,ingrid-hakkert"
+    only = (
+        "john-yellowley,"
+        "ingrid-hakkert,"
+        "monika-tanova"
+    )
 
 
 wanted = [
@@ -262,7 +265,6 @@ for case in cases:
         .lower()
     )
 
-    # Alleen de opgegeven dossiers onderzoeken.
     if slug not in wanted:
         continue
 
@@ -279,7 +281,8 @@ for case in cases:
             html
         )
 
-        # In deze test wordt bewust niets opgeslagen.
+        # In deze diagnostische test wordt
+        # bewust niets opgeslagen.
         if image:
 
             print(
