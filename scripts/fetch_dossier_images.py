@@ -175,9 +175,10 @@ def is_header_image(item):
         "block-header",
     ]
 
-    header_ids = [
-        "top",
-    ]
+    # BELANGRIJK:
+    # id="top" staat op de body van de hele pagina
+    # en mag daarom NIET als header gelden.
+    header_ids = []
 
     for parent in item.get("parents", []):
 
