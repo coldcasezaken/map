@@ -199,7 +199,7 @@ with open(
 
 only = os.environ.get(
     "ONLY_SLUGS",
-    "john-yellowley"
+    "ingrid-hakkert"
 ).strip().lower()
 
 wanted = [
