@@ -100,7 +100,7 @@ def fetch_page(url):
         url,
         headers={
             "User-Agent": "Mozilla/5.0 ColdcaseExplorer"
-        },
+        }
     )
 
     with urllib.request.urlopen(
@@ -162,10 +162,10 @@ def print_context(item):
         line = "    <" + tag
 
         if element_id:
-            line += " id=\"" + element_id + "\""
+            line += ' id="' + element_id + '"'
 
         if element_class:
-            line += " class=\"" + element_class + "\""
+            line += ' class="' + element_class + '"'
 
         line += ">"
 
@@ -231,8 +231,8 @@ def find_image(page_url, html):
 
     print("")
 
-    # BELANGRIJK:
-    # Deze test kiest bewust nog GEEN afbeelding.
+    # DIAGNOSTISCHE TEST:
+    # Bewust geen afbeelding kiezen en niets opslaan.
     return None
 
 
@@ -247,7 +247,7 @@ with open(
 
 only = os.environ.get(
     "ONLY_SLUGS",
-    "ingrid-hakkert"
+    "john-yellowley,ingrid-hakkert"
 ).strip().lower()
 
 
@@ -281,15 +281,7 @@ for case in cases:
         .lower()
     )
 
-    # Bestaande handmatige foto nooit overschrijven.
-    if "image" in case:
-
-        print(
-            f"[SKIP] {slug}: image bestaat al"
-        )
-
-        continue
-
+    # Alleen de opgegeven dossiers onderzoeken.
     if wanted and slug not in wanted:
         continue
 
@@ -306,11 +298,9 @@ for case in cases:
             html
         )
 
+        # find_image() retourneert in deze diagnostische test
+        # altijd None.
         if image:
-
-            case["image"] = image
-
-            changed += 1
 
             print(
                 f"[FOUND] {image}"
@@ -319,7 +309,7 @@ for case in cases:
         else:
 
             print(
-                "[NONE] Geen geschikte foto gevonden"
+                "[NONE] Geen afbeelding automatisch gekozen"
             )
 
     except Exception as error:
@@ -329,24 +319,6 @@ for case in cases:
         )
 
     time.sleep(1)
-
-
-if changed:
-
-    with open(
-        CASES_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
-
-        json.dump(
-            cases,
-            file,
-            ensure_ascii=False,
-            indent=2
-        )
-
-        file.write("\n")
 
 
 print(
