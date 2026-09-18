@@ -679,6 +679,7 @@ return {category:c.type||'',place:c.place||c.location||c.city||'',year:c.year||'
     var wanted=c&&(c.link||c.url||'')||'';
     var rawTitle=String(c&&(c.title||c.name)||'');
     if(/geen sitedossier/i.test(rawTitle) || /\/zaak-zonder-dossier(?:$|\?)/i.test(wanted))return '';
+   if(c.image)return c.image;
     var meta=caseMetaFor(c);
     var key=popupUrlKey((meta&&meta.link)||wanted);
     /* Deze vijf dossiers tonen bewust alleen de rustige tekst-placeholder in de lijst. */
