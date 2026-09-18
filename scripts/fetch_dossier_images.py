@@ -15,8 +15,6 @@ class ImageParser(HTMLParser):
         super().__init__()
 
         self.images = []
-
-        # Houd bij in welke HTML-elementen een afbeelding staat.
         self.stack = []
 
     def handle_starttag(self, tag, attrs):
@@ -25,7 +23,6 @@ class ImageParser(HTMLParser):
 
         tag = tag.lower()
 
-        # Bewaar de context van het huidige element.
         context = {
             "tag": tag,
             "id": attrs_dict.get("id", ""),
@@ -37,7 +34,6 @@ class ImageParser(HTMLParser):
         if tag != "img":
             return
 
-        # Zoek alle mogelijke afbeeldingsbronnen.
         image_sources = []
 
         for key in (
@@ -55,10 +51,8 @@ class ImageParser(HTMLParser):
             return
 
         image = image_sources[0]
-
         alt = attrs_dict.get("alt", "")
 
-        # Bewaar de HTML-context rondom de afbeelding.
         parents = []
 
         for item in self.stack[:-1]:
@@ -86,11 +80,16 @@ class ImageParser(HTMLParser):
 
         tag = tag.lower()
 
-        # Haal het meest recente element van dezelfde tag uit de stack.
-        for index in range(len(self.stack) - 1, -1, -1):
+        for index in range(
+            len(self.stack) - 1,
+            -1,
+            -1
+        ):
 
             if self.stack[index]["tag"] == tag:
+
                 self.stack = self.stack[:index]
+
                 return
 
 
@@ -114,45 +113,12 @@ def fetch_page(url):
         )
 
 
-def is_good_image(url):
-
-    if not url.startswith(
-        ("http://", "https://")
-    ):
-        return False
-
-    text = url.lower()
-
-    unwanted = [
-        "logo",
-        "favicon",
-        "icon",
-        "sprite",
-        "placeholder",
-        "cookie",
-        "marker",
-        "cluster",
-        "facebook",
-        "instagram",
-        "linkedin",
-        "youtube",
-    ]
-
-    for word in unwanted:
-
-        if word in text:
-            return False
-
-    return True
-
-
 def print_context(item):
 
     print("  CONTEXT:")
 
     parents = item.get("parents", [])
 
-    # Laat maximaal de laatste 8 ouders zien.
     for parent in parents[-8:]:
 
         tag = parent.get("tag", "")
@@ -232,7 +198,8 @@ def find_image(page_url, html):
     print("")
 
     # DIAGNOSTISCHE TEST:
-    # Bewust geen afbeelding kiezen en niets opslaan.
+    # Bewust geen afbeelding kiezen.
+    # Er wordt niets aan cases.json toegevoegd.
     return None
 
 
@@ -245,10 +212,15 @@ with open(
     cases = json.load(file)
 
 
+# Als Actions geen ONLY_SLUGS meegeeft,
+# testen we standaard alleen John en Ingrid.
 only = os.environ.get(
     "ONLY_SLUGS",
-    "john-yellowley,ingrid-hakkert"
+    ""
 ).strip().lower()
+
+if not only:
+    only = "john-yellowley,ingrid-hakkert"
 
 
 wanted = [
@@ -256,6 +228,15 @@ wanted = [
     for item in only.split(",")
     if item.strip()
 ]
+
+
+print("")
+print("=== DIAGNOSTISCHE TEST ===")
+print(
+    "Te onderzoeken dossiers:",
+    ", ".join(wanted)
+)
+print("")
 
 
 changed = 0
@@ -282,7 +263,7 @@ for case in cases:
     )
 
     # Alleen de opgegeven dossiers onderzoeken.
-    if wanted and slug not in wanted:
+    if slug not in wanted:
         continue
 
     print(
@@ -298,8 +279,7 @@ for case in cases:
             html
         )
 
-        # find_image() retourneert in deze diagnostische test
-        # altijd None.
+        # In deze test wordt bewust niets opgeslagen.
         if image:
 
             print(
@@ -321,6 +301,8 @@ for case in cases:
     time.sleep(1)
 
 
+print("")
 print(
     f"Klaar. {changed} foto('s) toegevoegd."
 )
+print("")
