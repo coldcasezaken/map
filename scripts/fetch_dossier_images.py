@@ -127,68 +127,26 @@ def find_image(page_url, html):
     parser = ImageParser()
     parser.feed(html)
 
-    candidates = []
+    print("")
+    print("=== AFBEELDINGEN GEVONDEN ===")
+    print(f"Pagina: {page_url}")
+    print(f"Aantal: {len(parser.images)}")
+    print("")
 
-    # Afbeeldingen op de dossierpagina
-    for image, alt in parser.images:
+    for number, (image, alt) in enumerate(parser.images, 1):
         url = urljoin(page_url, image)
 
-        if not is_good_image(url):
-            continue
+        print(f"[IMAGE {number}]")
+        print(f"URL : {url}")
+        print(f"ALT : {alt}")
+        print("")
 
-        text = (url + " " + alt).lower()
+    print("=== EINDE AFBEELDINGEN ===")
+    print("")
 
-        # Algemene site-/partnerafbeeldingen overslaan
-        unwanted_context = [
-            "logo",
-            "partner",
-            "sponsor",
-            "footer",
-            "header",
-            "social",
-            "facebook",
-            "instagram",
-            "linkedin",
-            "youtube",
-            "stichting",
-            "instituut",
-            "institute",
-        ]
-
-        if any(word in text for word in unwanted_context):
-            continue
-
-        score = score_image(url, alt)
-
-        # Foto's die duidelijk over de persoon/zaak gaan extra waarderen
-        preferred_context = [
-            "portret",
-            "persoon",
-            "slachtoffer",
-            "vermist",
-            "dossier",
-            "zaak",
-            "verdwenen",
-            "moord",
-            "overleden",
-        ]
-
-        if any(word in text for word in preferred_context):
-            score += 10
-
-        candidates.append((score, url))
-
-    if not candidates:
-        return None
-
-    # Hoogste score eerst
-    candidates.sort(
-        key=lambda item: item[0],
-        reverse=True
-    )
-
-    return candidates[0][1]
-
+    # Tijdelijk alleen rapporteren.
+    # Er wordt bewust geen afbeelding gekozen.
+    return None
 with open(
     CASES_FILE,
     "r",
