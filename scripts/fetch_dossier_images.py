@@ -166,8 +166,8 @@ def has_unwanted_filename(url):
 
 def is_header_image(item):
 
-    # Alleen heel specifieke header/logo-elementen
-    # gelden als header.
+    # Alleen heel specifieke header/logo-elementen.
+    # "id=top" staat op de body en wordt dus NIET gebruikt.
     header_classes = [
         "jw-mobile-logo",
         "jw-mobile-header-image",
@@ -175,9 +175,6 @@ def is_header_image(item):
         "block-header",
     ]
 
-    # BELANGRIJK:
-    # id="top" staat op de body van de hele pagina
-    # en mag daarom NIET als header gelden.
     header_ids = []
 
     for parent in item.get("parents", []):
@@ -317,7 +314,7 @@ def score_candidate(
         )
 
     # ---------------------------------------------
-    # Gedeelde afbeelding
+    # Gedeelde afbeeldingen
     # ---------------------------------------------
 
     if duplicate_urls.get(
@@ -431,88 +428,6 @@ def choose_best_image(
     return candidates
 
 
-def print_images(
-    case,
-    images,
-    duplicate_urls
-):
-
-    title = str(
-        case.get("title")
-        or case.get("name")
-        or ""
-    )
-
-    print("")
-    print(
-        "=== AFBEELDINGEN GEVONDEN ==="
-    )
-
-    print(
-        f"Dossier: {title}"
-    )
-
-    print(
-        f"Pagina: {case.get('link', '')}"
-    )
-
-    print(
-        f"Aantal: {len(images)}"
-    )
-
-    print("")
-
-    for number, item in enumerate(
-        images,
-        1
-    ):
-
-        score, reasons = score_candidate(
-            item,
-            title,
-            duplicate_urls
-        )
-
-        print(
-            f"[IMAGE {number}]"
-        )
-
-        print(
-            f"URL    : {item['url']}"
-        )
-
-        print(
-            f"ALT    : {item['alt']}"
-        )
-
-        print(
-            f"WIDTH  : {item['width']}"
-        )
-
-        print(
-            f"HEIGHT : {item['height']}"
-        )
-
-        print(
-            f"SCORE  : {score}"
-        )
-
-        if reasons:
-
-            print(
-                "REDENEN: "
-                + ", ".join(reasons)
-            )
-
-        else:
-
-            print(
-                "REDENEN: geen"
-            )
-
-        print("")
-
-
 def scan_case(case):
 
     link = str(
@@ -555,22 +470,16 @@ with open(
 
 
 # -------------------------------------------------
-# Alleen de drie testdossiers
+# Optionele beperking
+#
+# Als ONLY_SLUGS leeg is:
+# ALLE dossiers onderzoeken.
 # -------------------------------------------------
 
 only = os.environ.get(
     "ONLY_SLUGS",
     ""
 ).strip().lower()
-
-if not only:
-
-    only = (
-        "john-yellowley,"
-        "ingrid-hakkert,"
-        "monika-tanova"
-    )
-
 
 wanted = [
     item.strip()
@@ -581,23 +490,44 @@ wanted = [
 
 print("")
 print(
-    "=== AUTOMATISCHE FOTOSELECTIE — DIAGNOSE ==="
+    "=============================================="
 )
 
 print(
-    "Te onderzoeken dossiers:",
-    ", ".join(wanted)
+    " AUTOMATISCHE FOTOSELECTIE — VOLLEDIGE DIAGNOSE"
+)
+
+print(
+    "=============================================="
 )
 
 print("")
 
+if wanted:
+
+    print(
+        "Beperkte test:",
+        ", ".join(wanted)
+    )
+
+else:
+
+    print(
+        "Alle dossiers worden onderzocht."
+    )
+
+print("")
+print(
+    "BELANGRIJK: cases.json wordt NIET gewijzigd."
+)
+print("")
+
 
 # -------------------------------------------------
-# Dossiers scannen
+# Dossiers verzamelen
 # -------------------------------------------------
 
-scanned = []
-
+selected_cases = []
 
 for case in cases:
 
@@ -620,11 +550,42 @@ for case in cases:
         .lower()
     )
 
-    if slug not in wanted:
+    if wanted and slug not in wanted:
         continue
 
+    selected_cases.append(
+        {
+            "case": case,
+            "slug": slug,
+        }
+    )
+
+
+print(
+    f"Dossiers te onderzoeken: {len(selected_cases)}"
+)
+
+print("")
+
+
+# -------------------------------------------------
+# Dossiers scannen
+# -------------------------------------------------
+
+scanned = []
+
+errors = []
+
+for number_index, entry in enumerate(
+    selected_cases,
+    1
+):
+
+    case = entry["case"]
+    slug = entry["slug"]
+
     print(
-        f"[CHECK] {slug}"
+        f"[{number_index}/{len(selected_cases)}] CHECK {slug}"
     )
 
     try:
@@ -641,11 +602,18 @@ for case in cases:
 
     except Exception as error:
 
+        errors.append(
+            {
+                "slug": slug,
+                "error": str(error),
+            }
+        )
+
         print(
             f"[ERROR] {slug}: {error}"
         )
 
-    time.sleep(1)
+    time.sleep(0.5)
 
 
 # -------------------------------------------------
@@ -675,25 +643,12 @@ duplicate_urls = Counter(
 )
 
 
-print("")
-print(
-    "=== GEDEELDE AFBEELDINGEN ==="
-)
-
-for url, count in duplicate_urls.items():
-
-    if count > 1:
-
-        print(
-            f"[SHARED {count}x] {url}"
-        )
-
-print("")
-
-
 # -------------------------------------------------
-# Beste kandidaat per dossier
+# Resultaten bepalen
 # -------------------------------------------------
+
+chosen = []
+no_photo = []
 
 for result in scanned:
 
@@ -701,61 +656,110 @@ for result in scanned:
     slug = result["slug"]
     images = result["images"]
 
-    print("")
-    print(
-        "========================================"
-    )
-
-    print(
-        f"DOSSIER: {slug}"
-    )
-
-    print(
-        "========================================"
-    )
-
-    print_images(
-        case,
-        images,
-        duplicate_urls
-    )
-
     candidates = choose_best_image(
         case,
         images,
         duplicate_urls
     )
 
-    if not candidates:
+    if candidates:
 
-        print(
-            "[RESULTAAT] GEEN FOTO"
+        best = candidates[0]
+
+        chosen.append(
+            {
+                "slug": slug,
+                "url": best["url"],
+                "score": best["score"],
+                "reasons": best["reasons"],
+            }
         )
 
-        print(
-            "Geen betrouwbare kandidaat gevonden."
+    else:
+
+        no_photo.append(
+            slug
         )
 
-        continue
 
-    best = candidates[0]
+# -------------------------------------------------
+# Samenvatting
+# -------------------------------------------------
+
+print("")
+print("")
+print(
+    "=============================================="
+)
+
+print(
+    " SAMENVATTING"
+)
+
+print(
+    "=============================================="
+)
+
+print("")
+
+print(
+    f"Dossiers onderzocht : {len(scanned)}"
+)
+
+print(
+    f"Automatisch gekozen : {len(chosen)}"
+)
+
+print(
+    f"GEEN FOTO           : {len(no_photo)}"
+)
+
+print(
+    f"Fouten              : {len(errors)}"
+)
+
+print(
+    f"Gedeelde afbeeldingen: "
+    + str(
+        sum(
+            1
+            for count in duplicate_urls.values()
+            if count > 1
+        )
+    )
+)
+
+print("")
+
+
+# -------------------------------------------------
+# Automatisch gekozen foto's
+# -------------------------------------------------
+
+print(
+    "=== AUTOMATISCH GEKOZEN ==="
+)
+
+print("")
+
+for item in chosen:
 
     print(
-        "[RESULTAAT] AUTOMATISCH GEKOZEN"
+        f"[PHOTO] {item['slug']}"
     )
 
     print(
-        f"URL   : {best['url']}"
+        f"        SCORE: {item['score']}"
     )
 
     print(
-        f"SCORE : {best['score']}"
+        f"        URL: {item['url']}"
     )
 
     print(
-        "REDENEN: "
+        "        REDENEN: "
         + ", ".join(
-            best["reasons"]
+            item["reasons"]
         )
     )
 
@@ -763,16 +767,74 @@ for result in scanned:
 
 
 # -------------------------------------------------
-# VEILIGHEID
+# Geen foto
 # -------------------------------------------------
 
-print("")
 print(
-    "=== TEST KLAAR ==="
+    "=== GEEN FOTO ==="
+)
+
+print("")
+
+for slug in no_photo:
+
+    print(
+        f"[NONE] {slug}"
+    )
+
+print("")
+
+
+# -------------------------------------------------
+# Fouten
+# -------------------------------------------------
+
+if errors:
+
+    print(
+        "=== FOUTEN ==="
+    )
+
+    print("")
+
+    for error in errors:
+
+        print(
+            f"[ERROR] {error['slug']}"
+        )
+
+        print(
+            f"        {error['error']}"
+        )
+
+        print("")
+
+
+# -------------------------------------------------
+# Veiligheid
+# -------------------------------------------------
+
+print(
+    "=============================================="
 )
 
 print(
-    "Er zijn geen wijzigingen opgeslagen in cases.json."
+    " TEST KLAAR"
+)
+
+print(
+    "=============================================="
+)
+
+print("")
+
+print(
+    "Er zijn GEEN wijzigingen opgeslagen "
+    "in cases.json."
+)
+
+print(
+    "Deze run was alleen een diagnose."
 )
 
 print("")
