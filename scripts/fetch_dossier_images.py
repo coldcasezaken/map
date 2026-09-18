@@ -129,23 +129,54 @@ def find_image(page_url, html):
 
     candidates = []
 
-    # Eerst eventuele officiële social/SEO afbeelding
-    for image in parser.meta_images:
-        url = urljoin(page_url, image)
-
-        if is_good_image(url):
-            candidates.append(
-                (score_image(url), url)
-            )
-
-    # Daarna afbeeldingen op de dossierpagina
+    # Afbeeldingen op de dossierpagina
     for image, alt in parser.images:
         url = urljoin(page_url, image)
 
-        if is_good_image(url):
-            candidates.append(
-                (score_image(url, alt), url)
-            )
+        if not is_good_image(url):
+            continue
+
+        text = (url + " " + alt).lower()
+
+        # Algemene site-/partnerafbeeldingen overslaan
+        unwanted_context = [
+            "logo",
+            "partner",
+            "sponsor",
+            "footer",
+            "header",
+            "social",
+            "facebook",
+            "instagram",
+            "linkedin",
+            "youtube",
+            "stichting",
+            "instituut",
+            "institute",
+        ]
+
+        if any(word in text for word in unwanted_context):
+            continue
+
+        score = score_image(url, alt)
+
+        # Foto's die duidelijk over de persoon/zaak gaan extra waarderen
+        preferred_context = [
+            "portret",
+            "persoon",
+            "slachtoffer",
+            "vermist",
+            "dossier",
+            "zaak",
+            "verdwenen",
+            "moord",
+            "overleden",
+        ]
+
+        if any(word in text for word in preferred_context):
+            score += 10
+
+        candidates.append((score, url))
 
     if not candidates:
         return None
@@ -157,7 +188,6 @@ def find_image(page_url, html):
     )
 
     return candidates[0][1]
-
 
 with open(
     CASES_FILE,
