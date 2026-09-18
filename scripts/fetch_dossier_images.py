@@ -42,6 +42,7 @@ class ImageParser(HTMLParser):
             "data-original",
             "data-lazy-src",
         ):
+
             value = attrs_dict.get(key)
 
             if value:
@@ -80,7 +81,9 @@ class ImageParser(HTMLParser):
         ):
 
             if self.stack[index]["tag"] == tag:
+
                 self.stack = self.stack[:index]
+
                 return
 
 
@@ -108,7 +111,9 @@ def number(value):
 
     try:
         return float(value)
+
     except Exception:
+
         return 0
 
 
@@ -166,16 +171,12 @@ def has_unwanted_filename(url):
 
 def is_header_image(item):
 
-    # Alleen heel specifieke header/logo-elementen.
-    # "id=top" staat op de body en wordt dus NIET gebruikt.
     header_classes = [
         "jw-mobile-logo",
         "jw-mobile-header-image",
         "jw-mobile-header",
         "block-header",
     ]
-
-    header_ids = []
 
     for parent in item.get("parents", []):
 
@@ -185,18 +186,11 @@ def is_header_image(item):
             .split()
         )
 
-        parent_id = (
-            parent.get("id", "")
-            .lower()
-        )
-
         for value in header_classes:
 
             if value in parent_class:
-                return True
 
-        if parent_id in header_ids:
-            return True
+                return True
 
     return False
 
@@ -227,6 +221,47 @@ def is_content_image(item):
     return (
         "jw-element-image" in combined
     )
+
+
+def title_words_for_case(case_title):
+
+    title_lower = case_title.lower()
+
+    words = []
+
+    for word in title_lower.split():
+
+        cleaned = word.strip(
+            ".,:;!?()[]{}\"'"
+        )
+
+        if len(cleaned) >= 4:
+
+            words.append(cleaned)
+
+    return words
+
+
+def matching_title_words(
+    case_title,
+    alt
+):
+
+    alt_lower = alt.lower()
+
+    words = title_words_for_case(
+        case_title
+    )
+
+    matches = []
+
+    for word in words:
+
+        if word in alt_lower:
+
+            matches.append(word)
+
+    return matches
 
 
 def score_candidate(
@@ -314,58 +349,18 @@ def score_candidate(
         )
 
     # ---------------------------------------------
-    # Gedeelde afbeeldingen
-    # ---------------------------------------------
-
-    if duplicate_urls.get(
-        normalise_url(url),
-        0
-    ) > 1:
-
-        score -= 80
-
-        reasons.append(
-            "komt bij meerdere dossiers voor"
-        )
-
-    # ---------------------------------------------
-    # Bestandsnaam
-    # ---------------------------------------------
-
-    if has_unwanted_filename(url):
-
-        score -= 100
-
-        reasons.append(
-            "technische/tijdlijn-bestandsnaam"
-        )
-
-    # ---------------------------------------------
     # ALT-tekst
     # ---------------------------------------------
 
-    alt_lower = alt.lower()
-    title_lower = case_title.lower()
+    matches = matching_title_words(
+        case_title,
+        alt
+    )
 
-    title_words = [
-        word.strip(
-            ".,:;!?()[]{}"
-        )
-        for word in title_lower.split()
-        if len(word) >= 4
-    ]
-
-    matching_words = 0
-
-    for word in title_words:
-
-        if word in alt_lower:
-            matching_words += 1
-
-    if matching_words:
+    if matches:
 
         score += (
-            matching_words * 20
+            len(matches) * 20
         )
 
         reasons.append(
@@ -387,6 +382,50 @@ def score_candidate(
             reasons.append(
                 "geschikte portretverhouding"
             )
+
+    # ---------------------------------------------
+    # GEDEELDE AFBEELDING
+    #
+    # Een afbeelding die bij meerdere dossiers
+    # voorkomt is verdacht.
+    #
+    # We geven hem een zware straf.
+    #
+    # Alleen wanneer de ALT-tekst duidelijk
+    # bij dit dossier past, mag hij nog kans maken.
+    # ---------------------------------------------
+
+    duplicate_count = duplicate_urls.get(
+        normalise_url(url),
+        0
+    )
+
+    if duplicate_count > 1:
+
+        reasons.append(
+            f"gedeeld door {duplicate_count} dossiers"
+        )
+
+        if not matches:
+
+            return -500, [
+                "gedeelde afbeelding zonder "
+                "dossier-specifieke alt-tekst"
+            ]
+
+        score -= 40
+
+    # ---------------------------------------------
+    # Technische bestandsnamen
+    # ---------------------------------------------
+
+    if has_unwanted_filename(url):
+
+        score -= 100
+
+        reasons.append(
+            "technische/tijdlijn-bestandsnaam"
+        )
 
     return score, reasons
 
@@ -438,6 +477,7 @@ def scan_case(case):
     html = fetch_page(link)
 
     parser = ImageParser()
+
     parser.feed(html)
 
     images = []
@@ -471,9 +511,6 @@ with open(
 
 # -------------------------------------------------
 # Optionele beperking
-#
-# Als ONLY_SLUGS leeg is:
-# ALLE dossiers onderzoeken.
 # -------------------------------------------------
 
 only = os.environ.get(
@@ -517,9 +554,11 @@ else:
     )
 
 print("")
+
 print(
     "BELANGRIJK: cases.json wordt NIET gewijzigd."
 )
+
 print("")
 
 
@@ -629,6 +668,7 @@ for result in scanned:
         if is_social_or_tracking(
             item["url"]
         ):
+
             continue
 
         all_urls.append(
@@ -648,7 +688,11 @@ duplicate_urls = Counter(
 # -------------------------------------------------
 
 chosen = []
+
 no_photo = []
+
+shared_candidates = []
+
 
 for result in scanned:
 
@@ -680,6 +724,60 @@ for result in scanned:
         no_photo.append(
             slug
         )
+
+    # ---------------------------------------------
+    # Controle: zijn er gedeelde kandidaten?
+    # ---------------------------------------------
+
+    for item in images:
+
+        normalised = normalise_url(
+            item["url"]
+        )
+
+        count = duplicate_urls.get(
+            normalised,
+            0
+        )
+
+        if count > 1:
+
+            shared_candidates.append(
+                {
+                    "slug": slug,
+                    "url": item["url"],
+                    "count": count,
+                    "alt": item.get(
+                        "alt",
+                        ""
+                    ),
+                }
+            )
+
+
+# -------------------------------------------------
+# Unieke gedeelde afbeeldingen
+# -------------------------------------------------
+
+shared_unique = {}
+
+for item in shared_candidates:
+
+    key = normalise_url(
+        item["url"]
+    )
+
+    if key not in shared_unique:
+
+        shared_unique[key] = {
+            "url": item["url"],
+            "count": item["count"],
+            "dossiers": [],
+        }
+
+    shared_unique[key]["dossiers"].append(
+        item["slug"]
+    )
 
 
 # -------------------------------------------------
@@ -720,13 +818,7 @@ print(
 
 print(
     f"Gedeelde afbeeldingen: "
-    + str(
-        sum(
-            1
-            for count in duplicate_urls.values()
-            if count > 1
-        )
-    )
+    f"{len(shared_unique)}"
 )
 
 print("")
@@ -783,6 +875,49 @@ for slug in no_photo:
     )
 
 print("")
+
+
+# -------------------------------------------------
+# Gedeelde afbeeldingen
+# -------------------------------------------------
+
+print(
+    "=== GEDEELDE AFBEELDINGEN ==="
+)
+
+print("")
+
+if not shared_unique:
+
+    print(
+        "Geen gedeelde afbeeldingen gevonden."
+    )
+
+else:
+
+    for item in sorted(
+        shared_unique.values(),
+        key=lambda value: value["count"],
+        reverse=True
+    ):
+
+        print(
+            f"[SHARED] gebruikt door "
+            f"{item['count']} dossiers"
+        )
+
+        print(
+            f"URL: {item['url']}"
+        )
+
+        print(
+            "DOSSIERS: "
+            + ", ".join(
+                item["dossiers"]
+            )
+        )
+
+        print("")
 
 
 # -------------------------------------------------
