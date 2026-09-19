@@ -386,13 +386,14 @@ def score_candidate(
     # ---------------------------------------------
     # GEDEELDE AFBEELDING
     #
-    # Een afbeelding die bij meerdere dossiers
-    # voorkomt is verdacht.
+    # We tellen unieke dossiers.
     #
-    # We geven hem een zware straf.
+    # Een afbeelding die twee keer op dezelfde
+    # dossierpagina staat is dus NIET gedeeld.
     #
-    # Alleen wanneer de ALT-tekst duidelijk
-    # bij dit dossier past, mag hij nog kans maken.
+    # Alleen wanneer de afbeelding bij meerdere
+    # verschillende dossiers voorkomt, krijgt hij
+    # de gedeelde-afbeelding behandeling.
     # ---------------------------------------------
 
     duplicate_count = duplicate_urls.get(
@@ -657,11 +658,20 @@ for number_index, entry in enumerate(
 
 # -------------------------------------------------
 # Gedeelde afbeeldingen bepalen
+#
+# BELANGRIJK:
+# Een afbeelding kan meerdere keren op dezelfde
+# dossierpagina voorkomen. Dat telt niet als
+# "gedeeld door meerdere dossiers".
+#
+# We tellen daarom unieke dossier-slugs per afbeelding.
 # -------------------------------------------------
 
-all_urls = []
+image_dossiers = {}
 
 for result in scanned:
+
+    slug = result["slug"]
 
     for item in result["images"]:
 
@@ -671,16 +681,21 @@ for result in scanned:
 
             continue
 
-        all_urls.append(
-            normalise_url(
-                item["url"]
-            )
+        key = normalise_url(
+            item["url"]
         )
 
+        if key not in image_dossiers:
 
-duplicate_urls = Counter(
-    all_urls
-)
+            image_dossiers[key] = set()
+
+        image_dossiers[key].add(slug)
+
+
+duplicate_urls = {
+    key: len(slugs)
+    for key, slugs in image_dossiers.items()
+}
 
 
 # -------------------------------------------------
@@ -775,9 +790,11 @@ for item in shared_candidates:
             "dossiers": [],
         }
 
-    shared_unique[key]["dossiers"].append(
-        item["slug"]
-    )
+    if item["slug"] not in shared_unique[key]["dossiers"]:
+
+        shared_unique[key]["dossiers"].append(
+            item["slug"]
+        )
 
 
 # -------------------------------------------------
