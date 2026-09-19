@@ -2,7 +2,6 @@ import json
 import os
 import time
 import urllib.request
-from collections import Counter
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
@@ -14,27 +13,23 @@ class ImageParser(HTMLParser):
 
     def __init__(self):
         super().__init__()
-
         self.images = []
         self.stack = []
 
     def handle_starttag(self, tag, attrs):
-
         attrs_dict = dict(attrs)
         tag = tag.lower()
 
-        context = {
+        self.stack.append({
             "tag": tag,
             "id": attrs_dict.get("id", ""),
             "class": attrs_dict.get("class", ""),
-        }
-
-        self.stack.append(context)
+        })
 
         if tag != "img":
             return
 
-        image_sources = []
+        sources = []
 
         for key in (
             "src",
@@ -42,36 +37,32 @@ class ImageParser(HTMLParser):
             "data-original",
             "data-lazy-src",
         ):
-
             value = attrs_dict.get(key)
 
             if value:
-                image_sources.append(value)
+                sources.append(value)
 
-        if not image_sources:
+        if not sources:
             return
 
-        self.images.append(
-            {
-                "src": image_sources[0],
-                "alt": attrs_dict.get("alt", ""),
-                "width": attrs_dict.get("width", ""),
-                "height": attrs_dict.get("height", ""),
-                "class": attrs_dict.get("class", ""),
-                "id": attrs_dict.get("id", ""),
-                "parents": [
-                    {
-                        "tag": item["tag"],
-                        "id": item["id"],
-                        "class": item["class"],
-                    }
-                    for item in self.stack[:-1]
-                ],
-            }
-        )
+        self.images.append({
+            "src": sources[0],
+            "alt": attrs_dict.get("alt", ""),
+            "width": attrs_dict.get("width", ""),
+            "height": attrs_dict.get("height", ""),
+            "class": attrs_dict.get("class", ""),
+            "id": attrs_dict.get("id", ""),
+            "parents": [
+                {
+                    "tag": item["tag"],
+                    "id": item["id"],
+                    "class": item["class"],
+                }
+                for item in self.stack[:-1]
+            ],
+        })
 
     def handle_endtag(self, tag):
-
         tag = tag.lower()
 
         for index in range(
@@ -79,11 +70,8 @@ class ImageParser(HTMLParser):
             -1,
             -1
         ):
-
             if self.stack[index]["tag"] == tag:
-
                 self.stack = self.stack[:index]
-
                 return
 
 
@@ -113,7 +101,6 @@ def number(value):
         return float(value)
 
     except Exception:
-
         return 0
 
 
@@ -169,6 +156,63 @@ def has_unwanted_filename(url):
     )
 
 
+def generic_alt_penalty(alt):
+
+    """
+    Straf algemene website-/organisatiebeelden.
+
+    We gebruiken hier bewust geen specifieke
+    partnernamen of specifieke bestandsnamen.
+    Daardoor blijft deze logica bruikbaar als
+    partners of logo's in de toekomst veranderen.
+    """
+
+    text = " ".join(
+        str(alt or "").lower().split()
+    )
+
+    strong = [
+        "logo",
+        "cookie",
+        "social media",
+        "facebook",
+        "instagram",
+        "linkedin",
+        "youtube",
+        "menu",
+        "navigatie",
+        "header",
+        "footer",
+        "banner",
+    ]
+
+    medium = [
+        "stichting",
+        "organisatie",
+        "partner",
+        "sponsor",
+        "instituut",
+        "institute",
+        "foundation",
+        "algemene afbeelding",
+        "website",
+    ]
+
+    if any(
+        word in text
+        for word in strong
+    ):
+        return 180
+
+    if any(
+        word in text
+        for word in medium
+    ):
+        return 70
+
+    return 0
+
+
 def is_header_image(item):
 
     header_classes = [
@@ -178,10 +222,16 @@ def is_header_image(item):
         "block-header",
     ]
 
-    for parent in item.get("parents", []):
+    for parent in item.get(
+        "parents",
+        []
+    ):
 
         parent_class = (
-            parent.get("class", "")
+            parent.get(
+                "class",
+                ""
+            )
             .lower()
             .split()
         )
@@ -189,7 +239,6 @@ def is_header_image(item):
         for value in header_classes:
 
             if value in parent_class:
-
                 return True
 
     return False
@@ -206,20 +255,91 @@ def is_content_image(item):
 
         combined += (
             " "
-            + parent.get("class", "")
+            + parent.get(
+                "class",
+                ""
+            )
             + " "
-            + parent.get("id", "")
+            + parent.get(
+                "id",
+                ""
+            )
         ).lower()
 
     combined += (
         " "
-        + item.get("class", "")
+        + item.get(
+            "class",
+            ""
+        )
         + " "
-        + item.get("id", "")
+        + item.get(
+            "id",
+            ""
+        )
     ).lower()
 
     return (
-        "jw-element-image" in combined
+        "jw-element-image"
+        in combined
+    )
+
+
+def has_general_website_context(item):
+
+    combined = " ".join(
+        (
+            str(
+                parent.get(
+                    "class",
+                    ""
+                )
+            )
+            + " "
+            + str(
+                parent.get(
+                    "id",
+                    ""
+                )
+            )
+        ).lower()
+
+        for parent in item.get(
+            "parents",
+            []
+        )
+    )
+
+    combined += (
+        " "
+        + str(
+            item.get(
+                "class",
+                ""
+            )
+        ).lower()
+    )
+
+    combined += (
+        " "
+        + str(
+            item.get(
+                "id",
+                ""
+            )
+        ).lower()
+    )
+
+    return any(
+        word in combined
+        for word in (
+            "footer",
+            "header",
+            "navigation",
+            "menu",
+            "social",
+            "share",
+        )
     )
 
 
@@ -232,7 +352,7 @@ def title_words_for_case(case_title):
     for word in title_lower.split():
 
         cleaned = word.strip(
-            ".,:;!?()[]{}\"'"
+            ". ,:;!?()[]{}\"'"
         )
 
         if len(cleaned) >= 4:
@@ -247,15 +367,15 @@ def matching_title_words(
     alt
 ):
 
-    alt_lower = alt.lower()
-
-    words = title_words_for_case(
-        case_title
-    )
+    alt_lower = str(
+        alt or ""
+    ).lower()
 
     matches = []
 
-    for word in words:
+    for word in title_words_for_case(
+        case_title
+    ):
 
         if word in alt_lower:
 
@@ -271,22 +391,31 @@ def score_candidate(
 ):
 
     url = item["url"]
-    alt = item.get("alt", "")
+
+    alt = item.get(
+        "alt",
+        ""
+    )
 
     width = number(
-        item.get("width")
+        item.get(
+            "width"
+        )
     )
 
     height = number(
-        item.get("height")
+        item.get(
+            "height"
+        )
     )
 
     score = 0
+
     reasons = []
 
-    # ---------------------------------------------
-    # Technische afbeeldingen uitsluiten
-    # ---------------------------------------------
+    # -------------------------------------------------
+    # Technische / algemene afbeeldingen
+    # -------------------------------------------------
 
     if is_social_or_tracking(url):
 
@@ -298,6 +427,12 @@ def score_candidate(
 
         return -1000, [
             "header/logo"
+        ]
+
+    if has_general_website_context(item):
+
+        return -1000, [
+            "algemene website-context"
         ]
 
     if width == 1 and height == 1:
@@ -314,9 +449,9 @@ def score_candidate(
                 "te klein"
             ]
 
-    # ---------------------------------------------
+    # -------------------------------------------------
     # JouwWeb content-afbeelding
-    # ---------------------------------------------
+    # -------------------------------------------------
 
     if is_content_image(item):
 
@@ -326,9 +461,9 @@ def score_candidate(
             "JouwWeb content-afbeelding"
         )
 
-    # ---------------------------------------------
+    # -------------------------------------------------
     # Afmetingen
-    # ---------------------------------------------
+    # -------------------------------------------------
 
     area = width * height
 
@@ -348,9 +483,9 @@ def score_candidate(
             "voldoende groot"
         )
 
-    # ---------------------------------------------
+    # -------------------------------------------------
     # ALT-tekst
-    # ---------------------------------------------
+    # -------------------------------------------------
 
     matches = matching_title_words(
         case_title,
@@ -367,9 +502,23 @@ def score_candidate(
             "alt-tekst past bij dossier"
         )
 
-    # ---------------------------------------------
+    # Algemene alt-tekst is een negatief signaal.
+
+    generic_penalty = generic_alt_penalty(
+        alt
+    )
+
+    if generic_penalty:
+
+        score -= generic_penalty
+
+        reasons.append(
+            f"algemene alt-tekst (-{generic_penalty})"
+        )
+
+    # -------------------------------------------------
     # Geschikte verhouding
-    # ---------------------------------------------
+    # -------------------------------------------------
 
     if width and height:
 
@@ -383,18 +532,15 @@ def score_candidate(
                 "geschikte portretverhouding"
             )
 
-    # ---------------------------------------------
-    # GEDEELDE AFBEELDING
+    # -------------------------------------------------
+    # Gedeelde afbeelding
     #
-    # We tellen unieke dossiers.
+    # We tellen unieke dossier-slugs.
     #
-    # Een afbeelding die twee keer op dezelfde
-    # dossierpagina staat is dus NIET gedeeld.
-    #
-    # Alleen wanneer de afbeelding bij meerdere
-    # verschillende dossiers voorkomt, krijgt hij
-    # de gedeelde-afbeelding behandeling.
-    # ---------------------------------------------
+    # Een afbeelding die meerdere keren op
+    # hetzelfde dossier staat telt dus niet
+    # als gedeeld.
+    # -------------------------------------------------
 
     duplicate_count = duplicate_urls.get(
         normalise_url(url),
@@ -416,9 +562,17 @@ def score_candidate(
 
         score -= 40
 
-    # ---------------------------------------------
-    # Technische bestandsnamen
-    # ---------------------------------------------
+        reasons.append(
+            "gedeeld maar alt-tekst "
+            "is dossier-specifiek"
+        )
+
+    # -------------------------------------------------
+    # Bestandsnaam
+    #
+    # Dit is slechts een extra signaal.
+    # We vertrouwen hier niet uitsluitend op.
+    # -------------------------------------------------
 
     if has_unwanted_filename(url):
 
@@ -454,11 +608,14 @@ def choose_best_image(
         )
 
         item["score"] = score
+
         item["reasons"] = reasons
 
         if score > 0:
 
-            candidates.append(item)
+            candidates.append(
+                item
+            )
 
     candidates.sort(
         key=lambda item: item["score"],
@@ -475,24 +632,32 @@ def scan_case(case):
         or ""
     ).strip()
 
-    html = fetch_page(link)
+    html = fetch_page(
+        link
+    )
 
     parser = ImageParser()
 
-    parser.feed(html)
+    parser.feed(
+        html
+    )
 
     images = []
 
     for item in parser.images:
 
-        item = dict(item)
+        item = dict(
+            item
+        )
 
         item["url"] = urljoin(
             link,
             item["src"]
         )
 
-        images.append(item)
+        images.append(
+            item
+        )
 
     return images
 
@@ -507,7 +672,9 @@ with open(
     encoding="utf-8"
 ) as file:
 
-    cases = json.load(file)
+    cases = json.load(
+        file
+    )
 
 
 # -------------------------------------------------
@@ -532,7 +699,8 @@ print(
 )
 
 print(
-    " AUTOMATISCHE FOTOSELECTIE — VOLLEDIGE DIAGNOSE"
+    " AUTOMATISCHE FOTOSELECTIE — "
+    "VOLLEDIGE DIAGNOSE"
 )
 
 print(
@@ -579,7 +747,10 @@ for case in cases:
     if not link:
         continue
 
-    if "/zaak-zonder-dossier" in link.lower():
+    if (
+        "/zaak-zonder-dossier"
+        in link.lower()
+    ):
         continue
 
     slug = (
@@ -602,7 +773,8 @@ for case in cases:
 
 
 print(
-    f"Dossiers te onderzoeken: {len(selected_cases)}"
+    f"Dossiers te onderzoeken: "
+    f"{len(selected_cases)}"
 )
 
 print("")
@@ -622,15 +794,20 @@ for number_index, entry in enumerate(
 ):
 
     case = entry["case"]
+
     slug = entry["slug"]
 
     print(
-        f"[{number_index}/{len(selected_cases)}] CHECK {slug}"
+        f"[{number_index}/"
+        f"{len(selected_cases)}] "
+        f"CHECK {slug}"
     )
 
     try:
 
-        images = scan_case(case)
+        images = scan_case(
+            case
+        )
 
         scanned.append(
             {
@@ -653,18 +830,13 @@ for number_index, entry in enumerate(
             f"[ERROR] {slug}: {error}"
         )
 
-    time.sleep(0.5)
+    time.sleep(
+        0.5
+    )
 
 
 # -------------------------------------------------
 # Gedeelde afbeeldingen bepalen
-#
-# BELANGRIJK:
-# Een afbeelding kan meerdere keren op dezelfde
-# dossierpagina voorkomen. Dat telt niet als
-# "gedeeld door meerdere dossiers".
-#
-# We tellen daarom unieke dossier-slugs per afbeelding.
 # -------------------------------------------------
 
 image_dossiers = {}
@@ -678,7 +850,6 @@ for result in scanned:
         if is_social_or_tracking(
             item["url"]
         ):
-
             continue
 
         key = normalise_url(
@@ -689,12 +860,15 @@ for result in scanned:
 
             image_dossiers[key] = set()
 
-        image_dossiers[key].add(slug)
+        image_dossiers[key].add(
+            slug
+        )
 
 
 duplicate_urls = {
     key: len(slugs)
-    for key, slugs in image_dossiers.items()
+    for key, slugs
+    in image_dossiers.items()
 }
 
 
@@ -712,7 +886,9 @@ shared_candidates = []
 for result in scanned:
 
     case = result["case"]
+
     slug = result["slug"]
+
     images = result["images"]
 
     candidates = choose_best_image(
@@ -740,9 +916,7 @@ for result in scanned:
             slug
         )
 
-    # ---------------------------------------------
-    # Controle: zijn er gedeelde kandidaten?
-    # ---------------------------------------------
+    # Controle gedeelde afbeeldingen
 
     for item in images:
 
@@ -790,7 +964,10 @@ for item in shared_candidates:
             "dossiers": [],
         }
 
-    if item["slug"] not in shared_unique[key]["dossiers"]:
+    if (
+        item["slug"]
+        not in shared_unique[key]["dossiers"]
+    ):
 
         shared_unique[key]["dossiers"].append(
             item["slug"]
@@ -801,7 +978,6 @@ for item in shared_candidates:
 # Samenvatting
 # -------------------------------------------------
 
-print("")
 print("")
 print(
     "=============================================="
@@ -818,19 +994,23 @@ print(
 print("")
 
 print(
-    f"Dossiers onderzocht : {len(scanned)}"
+    f"Dossiers onderzocht : "
+    f"{len(scanned)}"
 )
 
 print(
-    f"Automatisch gekozen : {len(chosen)}"
+    f"Automatisch gekozen : "
+    f"{len(chosen)}"
 )
 
 print(
-    f"GEEN FOTO           : {len(no_photo)}"
+    f"GEEN FOTO           : "
+    f"{len(no_photo)}"
 )
 
 print(
-    f"Fouten              : {len(errors)}"
+    f"Fouten              : "
+    f"{len(errors)}"
 )
 
 print(
@@ -858,11 +1038,13 @@ for item in chosen:
     )
 
     print(
-        f"        SCORE: {item['score']}"
+        f"        SCORE: "
+        f"{item['score']}"
     )
 
     print(
-        f"        URL: {item['url']}"
+        f"        URL: "
+        f"{item['url']}"
     )
 
     print(
@@ -952,11 +1134,13 @@ if errors:
     for error in errors:
 
         print(
-            f"[ERROR] {error['slug']}"
+            f"[ERROR] "
+            f"{error['slug']}"
         )
 
         print(
-            f"        {error['error']}"
+            f"        "
+            f"{error['error']}"
         )
 
         print("")
