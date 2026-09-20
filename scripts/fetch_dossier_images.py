@@ -2,7 +2,6 @@ import json
 import os
 import time
 import urllib.request
-from collections import Counter
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
@@ -110,6 +109,7 @@ def fetch_page(url):
 def number(value):
 
     try:
+
         return float(value)
 
     except Exception:
@@ -178,10 +178,16 @@ def is_header_image(item):
         "block-header",
     ]
 
-    for parent in item.get("parents", []):
+    for parent in item.get(
+        "parents",
+        []
+    ):
 
         parent_class = (
-            parent.get("class", "")
+            parent.get(
+                "class",
+                ""
+            )
             .lower()
             .split()
         )
@@ -271,7 +277,10 @@ def score_candidate(
 ):
 
     url = item["url"]
-    alt = item.get("alt", "")
+    alt = item.get(
+        "alt",
+        ""
+    )
 
     width = number(
         item.get("width")
@@ -283,10 +292,6 @@ def score_candidate(
 
     score = 0
     reasons = []
-
-    # ---------------------------------------------
-    # Technische afbeeldingen uitsluiten
-    # ---------------------------------------------
 
     if is_social_or_tracking(url):
 
@@ -314,10 +319,6 @@ def score_candidate(
                 "te klein"
             ]
 
-    # ---------------------------------------------
-    # JouwWeb content-afbeelding
-    # ---------------------------------------------
-
     if is_content_image(item):
 
         score += 20
@@ -325,10 +326,6 @@ def score_candidate(
         reasons.append(
             "JouwWeb content-afbeelding"
         )
-
-    # ---------------------------------------------
-    # Afmetingen
-    # ---------------------------------------------
 
     area = width * height
 
@@ -348,10 +345,6 @@ def score_candidate(
             "voldoende groot"
         )
 
-    # ---------------------------------------------
-    # ALT-tekst
-    # ---------------------------------------------
-
     matches = matching_title_words(
         case_title,
         alt
@@ -367,10 +360,6 @@ def score_candidate(
             "alt-tekst past bij dossier"
         )
 
-    # ---------------------------------------------
-    # Geschikte verhouding
-    # ---------------------------------------------
-
     if width and height:
 
         ratio = width / height
@@ -382,19 +371,6 @@ def score_candidate(
             reasons.append(
                 "geschikte portretverhouding"
             )
-
-    # ---------------------------------------------
-    # GEDEELDE AFBEELDING
-    #
-    # We tellen unieke dossiers.
-    #
-    # Een afbeelding die twee keer op dezelfde
-    # dossierpagina staat is dus NIET gedeeld.
-    #
-    # Alleen wanneer de afbeelding bij meerdere
-    # verschillende dossiers voorkomt, krijgt hij
-    # de gedeelde-afbeelding behandeling.
-    # ---------------------------------------------
 
     duplicate_count = duplicate_urls.get(
         normalise_url(url),
@@ -415,10 +391,6 @@ def score_candidate(
             ]
 
         score -= 40
-
-    # ---------------------------------------------
-    # Technische bestandsnamen
-    # ---------------------------------------------
 
     if has_unwanted_filename(url):
 
@@ -497,10 +469,6 @@ def scan_case(case):
     return images
 
 
-# -------------------------------------------------
-# cases.json laden
-# -------------------------------------------------
-
 with open(
     CASES_FILE,
     "r",
@@ -509,10 +477,6 @@ with open(
 
     cases = json.load(file)
 
-
-# -------------------------------------------------
-# Optionele beperking
-# -------------------------------------------------
 
 only = os.environ.get(
     "ONLY_SLUGS",
@@ -563,10 +527,6 @@ print(
 print("")
 
 
-# -------------------------------------------------
-# Dossiers verzamelen
-# -------------------------------------------------
-
 selected_cases = []
 
 for case in cases:
@@ -607,10 +567,6 @@ print(
 
 print("")
 
-
-# -------------------------------------------------
-# Dossiers scannen
-# -------------------------------------------------
 
 scanned = []
 
@@ -656,18 +612,9 @@ for number_index, entry in enumerate(
     time.sleep(0.5)
 
 
-# -------------------------------------------------
-# Gedeelde afbeeldingen bepalen
-#
-# BELANGRIJK:
-# Een afbeelding kan meerdere keren op dezelfde
-# dossierpagina voorkomen. Dat telt niet als
-# "gedeeld door meerdere dossiers".
-#
-# We tellen daarom unieke dossier-slugs per afbeelding.
-# -------------------------------------------------
-
 image_dossiers = {}
+
+image_details = {}
 
 for result in scanned:
 
@@ -691,16 +638,22 @@ for result in scanned:
 
         image_dossiers[key].add(slug)
 
+        if key not in image_details:
+
+            image_details[key] = {
+                "url": item["url"],
+                "alt": item.get(
+                    "alt",
+                    ""
+                ),
+            }
+
 
 duplicate_urls = {
     key: len(slugs)
     for key, slugs in image_dossiers.items()
 }
 
-
-# -------------------------------------------------
-# Resultaten bepalen
-# -------------------------------------------------
 
 chosen = []
 
@@ -740,10 +693,6 @@ for result in scanned:
             slug
         )
 
-    # ---------------------------------------------
-    # Controle: zijn er gedeelde kandidaten?
-    # ---------------------------------------------
-
     for item in images:
 
         normalised = normalise_url(
@@ -770,10 +719,6 @@ for result in scanned:
             )
 
 
-# -------------------------------------------------
-# Unieke gedeelde afbeeldingen
-# -------------------------------------------------
-
 shared_unique = {}
 
 for item in shared_candidates:
@@ -787,6 +732,10 @@ for item in shared_candidates:
         shared_unique[key] = {
             "url": item["url"],
             "count": item["count"],
+            "alt": item.get(
+                "alt",
+                ""
+            ),
             "dossiers": [],
         }
 
@@ -796,10 +745,6 @@ for item in shared_candidates:
             item["slug"]
         )
 
-
-# -------------------------------------------------
-# Samenvatting
-# -------------------------------------------------
 
 print("")
 print("")
@@ -841,10 +786,6 @@ print(
 print("")
 
 
-# -------------------------------------------------
-# Automatisch gekozen foto's
-# -------------------------------------------------
-
 print(
     "=== AUTOMATISCH GEKOZEN ==="
 )
@@ -875,10 +816,6 @@ for item in chosen:
     print("")
 
 
-# -------------------------------------------------
-# Geen foto
-# -------------------------------------------------
-
 print(
     "=== GEEN FOTO ==="
 )
@@ -893,10 +830,6 @@ for slug in no_photo:
 
 print("")
 
-
-# -------------------------------------------------
-# Gedeelde afbeeldingen
-# -------------------------------------------------
 
 print(
     "=== GEDEELDE AFBEELDINGEN ==="
@@ -928,6 +861,10 @@ else:
         )
 
         print(
+            f"ALT: {item['alt']}"
+        )
+
+        print(
             "DOSSIERS: "
             + ", ".join(
                 item["dossiers"]
@@ -936,10 +873,6 @@ else:
 
         print("")
 
-
-# -------------------------------------------------
-# Fouten
-# -------------------------------------------------
 
 if errors:
 
@@ -961,10 +894,6 @@ if errors:
 
         print("")
 
-
-# -------------------------------------------------
-# Veiligheid
-# -------------------------------------------------
 
 print(
     "=============================================="
