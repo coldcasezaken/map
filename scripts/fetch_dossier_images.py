@@ -10,8 +10,6 @@ from urllib.parse import urljoin, urlparse
 
 CASES_FILE = "cases.json"
 
-# Afbeeldingen die op meer dan dit aantal dossiers voorkomen
-# worden beschouwd als algemene/site-brede afbeeldingen.
 GENERAL_SHARED_LIMIT = 50
 
 
@@ -115,11 +113,9 @@ def fetch_page(url):
 def number(value):
 
     try:
-
         return float(value)
 
     except Exception:
-
         return 0
 
 
@@ -201,7 +197,6 @@ def is_header_image(item):
         for value in header_classes:
 
             if value in parent_class:
-
                 return True
 
     return False
@@ -248,7 +243,6 @@ def title_words_for_case(case_title):
         )
 
         if len(cleaned) >= 4:
-
             words.append(cleaned)
 
     return words
@@ -270,7 +264,6 @@ def matching_title_words(
     for word in words:
 
         if word in alt_lower:
-
             matches.append(word)
 
     return matches
@@ -298,10 +291,6 @@ def score_candidate(
 
     score = 0
     reasons = []
-
-    # ------------------------------------------
-    # HARDE UITSLUITINGEN
-    # ------------------------------------------
 
     if is_social_or_tracking(url):
 
@@ -335,27 +324,17 @@ def score_candidate(
             "technische/logo-bestandsnaam"
         ]
 
-    # ------------------------------------------
-    # HOE VAAK KOMT DE AFBEELDING VOOR?
-    # ------------------------------------------
-
     duplicate_count = duplicate_urls.get(
         normalise_url(url),
         0
     )
 
-    # Algemene/site-brede afbeeldingen
-    # nooit als dossierfoto gebruiken.
     if duplicate_count > GENERAL_SHARED_LIMIT:
 
         return -1000, [
             f"algemene afbeelding gebruikt door "
             f"{duplicate_count} dossiers"
         ]
-
-    # ------------------------------------------
-    # CONTENT-AFBEELDING
-    # ------------------------------------------
 
     if is_content_image(item):
 
@@ -364,10 +343,6 @@ def score_candidate(
         reasons.append(
             "JouwWeb content-afbeelding"
         )
-
-    # ------------------------------------------
-    # AFBEELDINGSGROOTTE
-    # ------------------------------------------
 
     area = width * height
 
@@ -387,10 +362,6 @@ def score_candidate(
             "voldoende groot"
         )
 
-    # ------------------------------------------
-    # ALT-TEKST
-    # ------------------------------------------
-
     matches = matching_title_words(
         case_title,
         alt
@@ -406,10 +377,6 @@ def score_candidate(
             "alt-tekst past bij dossier"
         )
 
-    # ------------------------------------------
-    # PORTRETVERHOUDING
-    # ------------------------------------------
-
     if width and height:
 
         ratio = width / height
@@ -421,10 +388,6 @@ def score_candidate(
             reasons.append(
                 "geschikte portretverhouding"
             )
-
-    # ------------------------------------------
-    # UNIEK OF GEDEELD
-    # ------------------------------------------
 
     if duplicate_count == 1:
 
@@ -442,9 +405,6 @@ def score_candidate(
 
         score -= 40
 
-        # Een gedeelde afbeelding zonder
-        # dossier-specifieke alt-tekst
-        # vertrouwen we niet.
         if not matches:
 
             return -500, [
@@ -481,7 +441,6 @@ def choose_best_image(
         item["reasons"] = reasons
 
         if score > 0:
-
             candidates.append(item)
 
     candidates.sort(
@@ -521,10 +480,6 @@ def scan_case(case):
     return images
 
 
-# ==============================================
-# ID MAKEN
-# ==============================================
-
 def make_case_id(case):
 
     title = str(
@@ -534,12 +489,10 @@ def make_case_id(case):
     ).strip()
 
     if not title:
-
         return ""
 
     text = title
 
-    # Accenten verwijderen.
     text = unicodedata.normalize(
         "NFKD",
         text
@@ -553,7 +506,6 @@ def make_case_id(case):
 
     text = text.lower()
 
-    # Standaard omschrijvingen verwijderen.
     prefixes = [
         "de vermissing van ",
         "de vermissing van de ",
@@ -577,22 +529,18 @@ def make_case_id(case):
 
             break
 
-    # Een jaartal aan het einde hoort bij
-    # de titel, maar niet bij de persoons-ID.
     text = re.sub(
         r"\s+(?:19|20)\d{2}$",
         "",
         text
     )
 
-    # Alleen letters/cijfers behouden.
     text = re.sub(
         r"[^a-z0-9]+",
         "-",
         text
     )
 
-    # Meerdere streepjes terugbrengen naar één.
     text = re.sub(
         r"-+",
         "-",
@@ -603,10 +551,6 @@ def make_case_id(case):
 
     return text
 
-
-# ==============================================
-# CASES LADEN
-# ==============================================
 
 with open(
     CASES_FILE,
@@ -635,7 +579,7 @@ print(
 )
 
 print(
-    " AUTOMATISCHE DOSSIERFOTO + ID — TEST"
+    " AUTOMATISCHE DOSSIERFOTO + ID — TEST V2"
 )
 
 print(
@@ -675,7 +619,7 @@ print("")
 
 
 # ==============================================
-# ID'S VOORBEREIDEN
+# UNIEKE ID'S MAKEN
 # ==============================================
 
 id_map = {}
@@ -691,35 +635,31 @@ for index, case in enumerate(cases):
 
     if existing_id:
 
-        case_id = existing_id
+        base_id = existing_id
 
     else:
 
-        case_id = make_case_id(
+        base_id = make_case_id(
             case
         )
 
-        if case_id:
-
-            case["id"] = case_id
-
-    if not case_id:
-
+    if not base_id:
         continue
 
-    if case_id in id_map:
+    case_id = base_id
+    counter = 2
 
-        id_collisions.append(
-            {
-                "id": case_id,
-                "first": id_map[case_id],
-                "second": index,
-            }
-        )
+    while case_id in id_map:
 
-    else:
+        case_id = f"{base_id}-{counter}"
 
-        id_map[case_id] = index
+        counter += 1
+
+    if not existing_id:
+
+        case["id"] = case_id
+
+    id_map[case_id] = index
 
 
 print(
@@ -727,23 +667,12 @@ print(
     f"{len(id_map)}"
 )
 
-if id_collisions:
+print(
+    f"ID-dubbelingen: "
+    f"{len(id_collisions)}"
+)
 
-    print("")
-
-    print(
-        "WAARSCHUWING: ID-DUBBELINGEN GEVONDEN"
-    )
-
-    for collision in id_collisions:
-
-        print(
-            f"[ID COLLISION] {collision['id']} "
-            f"records {collision['first']} "
-            f"en {collision['second']}"
-        )
-
-    print("")
+print("")
 
 
 # ==============================================
@@ -760,11 +689,9 @@ for case in cases:
     ).strip()
 
     if not link:
-
         continue
 
     if "/zaak-zonder-dossier" in link.lower():
-
         continue
 
     slug = (
@@ -776,7 +703,6 @@ for case in cases:
     )
 
     if wanted and slug not in wanted:
-
         continue
 
     selected_cases.append(
@@ -847,7 +773,7 @@ for number_index, entry in enumerate(
 
 
 # ==============================================
-# GEDEELDE AFBEELDINGEN BEREKENEN
+# GEDEELDE AFBEELDINGEN
 # ==============================================
 
 image_dossiers = {}
@@ -861,7 +787,6 @@ for result in scanned:
         if is_social_or_tracking(
             item["url"]
         ):
-
             continue
 
         key = normalise_url(
@@ -884,7 +809,7 @@ duplicate_urls = {
 
 
 # ==============================================
-# FOTO'S KIEZEN EN WEGSCHRIJVEN
+# FOTO'S KIEZEN
 # ==============================================
 
 chosen = []
@@ -907,8 +832,6 @@ for result in scanned:
         or ""
     ).strip()
 
-    # Een bestaande handmatige foto blijft
-    # altijd leidend.
     if existing_image:
 
         manual_images.append(
@@ -962,7 +885,7 @@ for result in scanned:
 
 
 # ==============================================
-# RESULTAAT
+# SAMENVATTING
 # ==============================================
 
 print("")
@@ -1051,7 +974,7 @@ for item in new_images:
 
 
 # ==============================================
-# BESTAANDE HANDMATIGE FOTO'S
+# BESTAANDE FOTO'S
 # ==============================================
 
 print(
@@ -1116,10 +1039,6 @@ if errors:
 
         print("")
 
-
-# ==============================================
-# EINDE
-# ==============================================
 
 print(
     "=============================================="
