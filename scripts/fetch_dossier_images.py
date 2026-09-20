@@ -1,6 +1,8 @@
 import json
 import os
+import re
 import time
+import unicodedata
 import urllib.request
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
@@ -8,7 +10,7 @@ from urllib.parse import urljoin, urlparse
 
 CASES_FILE = "cases.json"
 
-# Afbeeldingen die op meer dan dit aantal dossiers voorkomen,
+# Afbeeldingen die op meer dan dit aantal dossiers voorkomen
 # worden beschouwd als algemene/site-brede afbeeldingen.
 GENERAL_SHARED_LIMIT = 50
 
@@ -298,7 +300,7 @@ def score_candidate(
     reasons = []
 
     # ------------------------------------------
-    # Harde uitsluitingen
+    # HARDE UITSLUITINGEN
     # ------------------------------------------
 
     if is_social_or_tracking(url):
@@ -334,7 +336,7 @@ def score_candidate(
         ]
 
     # ------------------------------------------
-    # Aantal dossiers waarin afbeelding voorkomt
+    # HOE VAAK KOMT DE AFBEELDING VOOR?
     # ------------------------------------------
 
     duplicate_count = duplicate_urls.get(
@@ -342,9 +344,8 @@ def score_candidate(
         0
     )
 
-    # Afbeeldingen die op heel veel dossiers
-    # voorkomen zijn vrijwel zeker algemene
-    # JouwWeb/site-assets.
+    # Algemene/site-brede afbeeldingen
+    # nooit als dossierfoto gebruiken.
     if duplicate_count > GENERAL_SHARED_LIMIT:
 
         return -1000, [
@@ -353,7 +354,7 @@ def score_candidate(
         ]
 
     # ------------------------------------------
-    # Content-afbeelding
+    # CONTENT-AFBEELDING
     # ------------------------------------------
 
     if is_content_image(item):
@@ -365,7 +366,7 @@ def score_candidate(
         )
 
     # ------------------------------------------
-    # Grootte
+    # AFBEELDINGSGROOTTE
     # ------------------------------------------
 
     area = width * height
@@ -387,7 +388,7 @@ def score_candidate(
         )
 
     # ------------------------------------------
-    # Alt-tekst koppeling met dossier
+    # ALT-TEKST
     # ------------------------------------------
 
     matches = matching_title_words(
@@ -406,7 +407,7 @@ def score_candidate(
         )
 
     # ------------------------------------------
-    # Portretverhouding
+    # PORTRETVERHOUDING
     # ------------------------------------------
 
     if width and height:
@@ -422,7 +423,7 @@ def score_candidate(
             )
 
     # ------------------------------------------
-    # Uniek versus gedeeld
+    # UNIEK OF GEDEELD
     # ------------------------------------------
 
     if duplicate_count == 1:
@@ -439,12 +440,11 @@ def score_candidate(
             f"gedeeld door {duplicate_count} dossiers"
         )
 
-        # Gedeelde afbeeldingen blijven toegestaan,
-        # maar krijgen een duidelijke straf.
         score -= 40
 
-        # Zonder dossier-specifieke alt-tekst
-        # wordt een gedeelde afbeelding niet gekozen.
+        # Een gedeelde afbeelding zonder
+        # dossier-specifieke alt-tekst
+        # vertrouwen we niet.
         if not matches:
 
             return -500, [
@@ -522,6 +522,89 @@ def scan_case(case):
 
 
 # ==============================================
+# ID MAKEN
+# ==============================================
+
+def make_case_id(case):
+
+    title = str(
+        case.get("title")
+        or case.get("name")
+        or ""
+    ).strip()
+
+    if not title:
+
+        return ""
+
+    text = title
+
+    # Accenten verwijderen.
+    text = unicodedata.normalize(
+        "NFKD",
+        text
+    )
+
+    text = "".join(
+        character
+        for character in text
+        if not unicodedata.combining(character)
+    )
+
+    text = text.lower()
+
+    # Standaard omschrijvingen verwijderen.
+    prefixes = [
+        "de vermissing van ",
+        "de vermissing van de ",
+        "de moord op ",
+        "de moord op de ",
+        "de verdwijning van ",
+        "de verdwijning van de ",
+        "de dood van ",
+        "de dood van de ",
+        "de zaak van ",
+        "de zaak van de ",
+    ]
+
+    for prefix in prefixes:
+
+        if text.startswith(prefix):
+
+            text = text[
+                len(prefix):
+            ]
+
+            break
+
+    # Een jaartal aan het einde hoort bij
+    # de titel, maar niet bij de persoons-ID.
+    text = re.sub(
+        r"\s+(?:19|20)\d{2}$",
+        "",
+        text
+    )
+
+    # Alleen letters/cijfers behouden.
+    text = re.sub(
+        r"[^a-z0-9]+",
+        "-",
+        text
+    )
+
+    # Meerdere streepjes terugbrengen naar één.
+    text = re.sub(
+        r"-+",
+        "-",
+        text
+    )
+
+    text = text.strip("-")
+
+    return text
+
+
+# ==============================================
 # CASES LADEN
 # ==============================================
 
@@ -552,7 +635,7 @@ print(
 )
 
 print(
-    " AUTOMATISCHE FOTOSELECTIE — TEST V2"
+    " AUTOMATISCHE DOSSIERFOTO + ID — TEST"
 )
 
 print(
@@ -577,17 +660,90 @@ else:
 print("")
 
 print(
-    "ALGEMENE AFBEELDINGEN > "
+    "Algemene afbeeldingen > "
     f"{GENERAL_SHARED_LIMIT} dossiers worden uitgesloten."
 )
 
 print("")
 
 print(
-    "BELANGRIJK: cases.json wordt NIET gewijzigd."
+    "Bestaande ID's en handmatige foto's "
+    "worden nooit overschreven."
 )
 
 print("")
+
+
+# ==============================================
+# ID'S VOORBEREIDEN
+# ==============================================
+
+id_map = {}
+
+id_collisions = []
+
+for index, case in enumerate(cases):
+
+    existing_id = str(
+        case.get("id")
+        or ""
+    ).strip()
+
+    if existing_id:
+
+        case_id = existing_id
+
+    else:
+
+        case_id = make_case_id(
+            case
+        )
+
+        if case_id:
+
+            case["id"] = case_id
+
+    if not case_id:
+
+        continue
+
+    if case_id in id_map:
+
+        id_collisions.append(
+            {
+                "id": case_id,
+                "first": id_map[case_id],
+                "second": index,
+            }
+        )
+
+    else:
+
+        id_map[case_id] = index
+
+
+print(
+    f"ID's aanwezig/gemaakt: "
+    f"{len(id_map)}"
+)
+
+if id_collisions:
+
+    print("")
+
+    print(
+        "WAARSCHUWING: ID-DUBBELINGEN GEVONDEN"
+    )
+
+    for collision in id_collisions:
+
+        print(
+            f"[ID COLLISION] {collision['id']} "
+            f"records {collision['first']} "
+            f"en {collision['second']}"
+        )
+
+    print("")
 
 
 # ==============================================
@@ -604,9 +760,11 @@ for case in cases:
     ).strip()
 
     if not link:
+
         continue
 
     if "/zaak-zonder-dossier" in link.lower():
+
         continue
 
     slug = (
@@ -618,6 +776,7 @@ for case in cases:
     )
 
     if wanted and slug not in wanted:
+
         continue
 
     selected_cases.append(
@@ -629,7 +788,7 @@ for case in cases:
 
 
 print(
-    f"Dossiers te onderzoeken: "
+    f"Dossiers met sitepagina te onderzoeken: "
     f"{len(selected_cases)}"
 )
 
@@ -659,7 +818,9 @@ for number_index, entry in enumerate(
 
     try:
 
-        images = scan_case(case)
+        images = scan_case(
+            case
+        )
 
         scanned.append(
             {
@@ -691,8 +852,6 @@ for number_index, entry in enumerate(
 
 image_dossiers = {}
 
-image_details = {}
-
 for result in scanned:
 
     slug = result["slug"]
@@ -713,17 +872,9 @@ for result in scanned:
 
             image_dossiers[key] = set()
 
-        image_dossiers[key].add(slug)
-
-        if key not in image_details:
-
-            image_details[key] = {
-                "url": item["url"],
-                "alt": item.get(
-                    "alt",
-                    ""
-                ),
-            }
+        image_dossiers[key].add(
+            slug
+        )
 
 
 duplicate_urls = {
@@ -733,14 +884,16 @@ duplicate_urls = {
 
 
 # ==============================================
-# FOTO'S KIEZEN
+# FOTO'S KIEZEN EN WEGSCHRIJVEN
 # ==============================================
 
 chosen = []
 
 no_photo = []
 
-shared_candidates = []
+manual_images = []
+
+new_images = []
 
 
 for result in scanned:
@@ -748,6 +901,28 @@ for result in scanned:
     case = result["case"]
     slug = result["slug"]
     images = result["images"]
+
+    existing_image = str(
+        case.get("image")
+        or ""
+    ).strip()
+
+    # Een bestaande handmatige foto blijft
+    # altijd leidend.
+    if existing_image:
+
+        manual_images.append(
+            {
+                "slug": slug,
+                "url": existing_image,
+            }
+        )
+
+        print(
+            f"[KEEP IMAGE] {slug}"
+        )
+
+        continue
 
     candidates = choose_best_image(
         case,
@@ -758,6 +933,17 @@ for result in scanned:
     if candidates:
 
         best = candidates[0]
+
+        case["image"] = best["url"]
+
+        new_images.append(
+            {
+                "slug": slug,
+                "url": best["url"],
+                "score": best["score"],
+                "reasons": best["reasons"],
+            }
+        )
 
         chosen.append(
             {
@@ -774,65 +960,9 @@ for result in scanned:
             slug
         )
 
-    for item in images:
-
-        normalised = normalise_url(
-            item["url"]
-        )
-
-        count = duplicate_urls.get(
-            normalised,
-            0
-        )
-
-        if count > 1:
-
-            shared_candidates.append(
-                {
-                    "slug": slug,
-                    "url": item["url"],
-                    "count": count,
-                    "alt": item.get(
-                        "alt",
-                        ""
-                    ),
-                }
-            )
-
 
 # ==============================================
-# UNIEKE GEDEELDE AFBEELDINGEN
-# ==============================================
-
-shared_unique = {}
-
-for item in shared_candidates:
-
-    key = normalise_url(
-        item["url"]
-    )
-
-    if key not in shared_unique:
-
-        shared_unique[key] = {
-            "url": item["url"],
-            "count": item["count"],
-            "alt": item.get(
-                "alt",
-                ""
-            ),
-            "dossiers": [],
-        }
-
-    if item["slug"] not in shared_unique[key]["dossiers"]:
-
-        shared_unique[key]["dossiers"].append(
-            item["slug"]
-        )
-
-
-# ==============================================
-# SAMENVATTING
+# RESULTAAT
 # ==============================================
 
 print("")
@@ -852,40 +982,51 @@ print(
 print("")
 
 print(
-    f"Dossiers onderzocht : {len(scanned)}"
+    f"Totaal records       : {len(cases)}"
 )
 
 print(
-    f"Automatisch gekozen : {len(chosen)}"
+    f"ID's aanwezig        : {len(id_map)}"
 )
 
 print(
-    f"GEEN FOTO           : {len(no_photo)}"
+    f"Dossiers onderzocht  : {len(scanned)}"
 )
 
 print(
-    f"Fouten              : {len(errors)}"
+    f"Nieuwe foto's        : {len(new_images)}"
 )
 
 print(
-    f"Gedeelde afbeeldingen: "
-    f"{len(shared_unique)}"
+    f"Bestaande foto's     : {len(manual_images)}"
+)
+
+print(
+    f"GEEN FOTO            : {len(no_photo)}"
+)
+
+print(
+    f"Fouten               : {len(errors)}"
+)
+
+print(
+    f"ID-dubbelingen       : {len(id_collisions)}"
 )
 
 print("")
 
 
 # ==============================================
-# AUTOMATISCH GEKOZEN
+# NIEUWE FOTO'S
 # ==============================================
 
 print(
-    "=== AUTOMATISCH GEKOZEN ==="
+    "=== NIEUW AUTOMATISCH GEKOZEN ==="
 )
 
 print("")
 
-for item in chosen:
+for item in new_images:
 
     print(
         f"[PHOTO] {item['slug']}"
@@ -910,6 +1051,29 @@ for item in chosen:
 
 
 # ==============================================
+# BESTAANDE HANDMATIGE FOTO'S
+# ==============================================
+
+print(
+    "=== BESTAANDE FOTO'S BEHOUDEN ==="
+)
+
+print("")
+
+for item in manual_images:
+
+    print(
+        f"[KEEP IMAGE] {item['slug']}"
+    )
+
+    print(
+        f"        URL: {item['url']}"
+    )
+
+    print("")
+
+
+# ==============================================
 # GEEN FOTO
 # ==============================================
 
@@ -926,53 +1090,6 @@ for slug in no_photo:
     )
 
 print("")
-
-
-# ==============================================
-# GEDEELDE AFBEELDINGEN
-# ==============================================
-
-print(
-    "=== GEDEELDE AFBEELDINGEN ==="
-)
-
-print("")
-
-if not shared_unique:
-
-    print(
-        "Geen gedeelde afbeeldingen gevonden."
-    )
-
-else:
-
-    for item in sorted(
-        shared_unique.values(),
-        key=lambda value: value["count"],
-        reverse=True
-    ):
-
-        print(
-            f"[SHARED] gebruikt door "
-            f"{item['count']} dossiers"
-        )
-
-        print(
-            f"URL: {item['url']}"
-        )
-
-        print(
-            f"ALT: {item['alt']}"
-        )
-
-        print(
-            "DOSSIERS: "
-            + ", ".join(
-                item["dossiers"]
-            )
-        )
-
-        print("")
 
 
 # ==============================================
@@ -1019,12 +1136,11 @@ print(
 print("")
 
 print(
-    "Er zijn GEEN wijzigingen opgeslagen "
-    "in cases.json."
+    "cases.json is aangepast op de TESTBRANCH."
 )
 
 print(
-    "Deze run was alleen een diagnose."
+    "De workflow kan deze wijzigingen committen."
 )
 
 print("")
