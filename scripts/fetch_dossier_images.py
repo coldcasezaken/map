@@ -8,6 +8,10 @@ from urllib.parse import urljoin, urlparse
 
 CASES_FILE = "cases.json"
 
+# Afbeeldingen die op meer dan dit aantal dossiers voorkomen,
+# worden beschouwd als algemene/site-brede afbeeldingen.
+GENERAL_SHARED_LIMIT = 50
+
 
 class ImageParser(HTMLParser):
 
@@ -293,6 +297,10 @@ def score_candidate(
     score = 0
     reasons = []
 
+    # ------------------------------------------
+    # Harde uitsluitingen
+    # ------------------------------------------
+
     if is_social_or_tracking(url):
 
         return -1000, [
@@ -319,6 +327,35 @@ def score_candidate(
                 "te klein"
             ]
 
+    if has_unwanted_filename(url):
+
+        return -1000, [
+            "technische/logo-bestandsnaam"
+        ]
+
+    # ------------------------------------------
+    # Aantal dossiers waarin afbeelding voorkomt
+    # ------------------------------------------
+
+    duplicate_count = duplicate_urls.get(
+        normalise_url(url),
+        0
+    )
+
+    # Afbeeldingen die op heel veel dossiers
+    # voorkomen zijn vrijwel zeker algemene
+    # JouwWeb/site-assets.
+    if duplicate_count > GENERAL_SHARED_LIMIT:
+
+        return -1000, [
+            f"algemene afbeelding gebruikt door "
+            f"{duplicate_count} dossiers"
+        ]
+
+    # ------------------------------------------
+    # Content-afbeelding
+    # ------------------------------------------
+
     if is_content_image(item):
 
         score += 20
@@ -326,6 +363,10 @@ def score_candidate(
         reasons.append(
             "JouwWeb content-afbeelding"
         )
+
+    # ------------------------------------------
+    # Grootte
+    # ------------------------------------------
 
     area = width * height
 
@@ -345,6 +386,10 @@ def score_candidate(
             "voldoende groot"
         )
 
+    # ------------------------------------------
+    # Alt-tekst koppeling met dossier
+    # ------------------------------------------
+
     matches = matching_title_words(
         case_title,
         alt
@@ -360,6 +405,10 @@ def score_candidate(
             "alt-tekst past bij dossier"
         )
 
+    # ------------------------------------------
+    # Portretverhouding
+    # ------------------------------------------
+
     if width and height:
 
         ratio = width / height
@@ -372,33 +421,36 @@ def score_candidate(
                 "geschikte portretverhouding"
             )
 
-    duplicate_count = duplicate_urls.get(
-        normalise_url(url),
-        0
-    )
+    # ------------------------------------------
+    # Uniek versus gedeeld
+    # ------------------------------------------
 
-    if duplicate_count > 1:
+    if duplicate_count == 1:
+
+        score += 20
+
+        reasons.append(
+            "alleen gebruikt door dit dossier"
+        )
+
+    elif duplicate_count > 1:
 
         reasons.append(
             f"gedeeld door {duplicate_count} dossiers"
         )
 
+        # Gedeelde afbeeldingen blijven toegestaan,
+        # maar krijgen een duidelijke straf.
+        score -= 40
+
+        # Zonder dossier-specifieke alt-tekst
+        # wordt een gedeelde afbeelding niet gekozen.
         if not matches:
 
             return -500, [
                 "gedeelde afbeelding zonder "
                 "dossier-specifieke alt-tekst"
             ]
-
-        score -= 40
-
-    if has_unwanted_filename(url):
-
-        score -= 100
-
-        reasons.append(
-            "technische/tijdlijn-bestandsnaam"
-        )
 
     return score, reasons
 
@@ -469,6 +521,10 @@ def scan_case(case):
     return images
 
 
+# ==============================================
+# CASES LADEN
+# ==============================================
+
 with open(
     CASES_FILE,
     "r",
@@ -496,7 +552,7 @@ print(
 )
 
 print(
-    " AUTOMATISCHE FOTOSELECTIE — VOLLEDIGE DIAGNOSE"
+    " AUTOMATISCHE FOTOSELECTIE — TEST V2"
 )
 
 print(
@@ -521,11 +577,22 @@ else:
 print("")
 
 print(
+    "ALGEMENE AFBEELDINGEN > "
+    f"{GENERAL_SHARED_LIMIT} dossiers worden uitgesloten."
+)
+
+print("")
+
+print(
     "BELANGRIJK: cases.json wordt NIET gewijzigd."
 )
 
 print("")
 
+
+# ==============================================
+# DOSSIERS SELECTEREN
+# ==============================================
 
 selected_cases = []
 
@@ -562,11 +629,16 @@ for case in cases:
 
 
 print(
-    f"Dossiers te onderzoeken: {len(selected_cases)}"
+    f"Dossiers te onderzoeken: "
+    f"{len(selected_cases)}"
 )
 
 print("")
 
+
+# ==============================================
+# DOSSIERS SCANNEN
+# ==============================================
 
 scanned = []
 
@@ -581,7 +653,8 @@ for number_index, entry in enumerate(
     slug = entry["slug"]
 
     print(
-        f"[{number_index}/{len(selected_cases)}] CHECK {slug}"
+        f"[{number_index}/{len(selected_cases)}] "
+        f"CHECK {slug}"
     )
 
     try:
@@ -611,6 +684,10 @@ for number_index, entry in enumerate(
 
     time.sleep(0.5)
 
+
+# ==============================================
+# GEDEELDE AFBEELDINGEN BEREKENEN
+# ==============================================
 
 image_dossiers = {}
 
@@ -654,6 +731,10 @@ duplicate_urls = {
     for key, slugs in image_dossiers.items()
 }
 
+
+# ==============================================
+# FOTO'S KIEZEN
+# ==============================================
 
 chosen = []
 
@@ -719,6 +800,10 @@ for result in scanned:
             )
 
 
+# ==============================================
+# UNIEKE GEDEELDE AFBEELDINGEN
+# ==============================================
+
 shared_unique = {}
 
 for item in shared_candidates:
@@ -745,6 +830,10 @@ for item in shared_candidates:
             item["slug"]
         )
 
+
+# ==============================================
+# SAMENVATTING
+# ==============================================
 
 print("")
 print("")
@@ -786,6 +875,10 @@ print(
 print("")
 
 
+# ==============================================
+# AUTOMATISCH GEKOZEN
+# ==============================================
+
 print(
     "=== AUTOMATISCH GEKOZEN ==="
 )
@@ -816,6 +909,10 @@ for item in chosen:
     print("")
 
 
+# ==============================================
+# GEEN FOTO
+# ==============================================
+
 print(
     "=== GEEN FOTO ==="
 )
@@ -830,6 +927,10 @@ for slug in no_photo:
 
 print("")
 
+
+# ==============================================
+# GEDEELDE AFBEELDINGEN
+# ==============================================
 
 print(
     "=== GEDEELDE AFBEELDINGEN ==="
@@ -874,6 +975,10 @@ else:
         print("")
 
 
+# ==============================================
+# FOUTEN
+# ==============================================
+
 if errors:
 
     print(
@@ -894,6 +999,10 @@ if errors:
 
         print("")
 
+
+# ==============================================
+# EINDE
+# ==============================================
 
 print(
     "=============================================="
