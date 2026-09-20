@@ -46,7 +46,6 @@ class ImageParser(HTMLParser):
             return
 
         self.images.append({
-            "order": len(self.images),
             "src": sources[0],
             "alt": attrs_dict.get("alt", ""),
             "width": attrs_dict.get("width", ""),
@@ -100,6 +99,7 @@ def number(value):
 
     try:
         return float(value)
+
     except Exception:
         return 0
 
@@ -157,6 +157,15 @@ def has_unwanted_filename(url):
 
 
 def generic_alt_penalty(alt):
+
+    """
+    Straf algemene website-/organisatiebeelden.
+
+    We gebruiken hier bewust geen specifieke
+    partnernamen of specifieke bestandsnamen.
+    Daardoor blijft deze logica bruikbaar als
+    partners of logo's in de toekomst veranderen.
+    """
 
     text = " ".join(
         str(alt or "").lower().split()
@@ -294,6 +303,7 @@ def has_general_website_context(item):
                 )
             )
         ).lower()
+
         for parent in item.get(
             "parents",
             []
@@ -333,38 +343,6 @@ def has_general_website_context(item):
     )
 
 
-def is_sensitive_person_image(item):
-
-    """
-    Sluit afbeeldingen uit die duidelijk een
-    verdachte/dader of vergelijkbare persoon tonen.
-
-    Zo voorkomen we dat een verdachtefoto automatisch
-    als hoofdafbeelding van een dossier wordt gekozen.
-    """
-
-    text = " ".join([
-        str(item.get("alt", "")),
-        str(item.get("src", "")),
-    ]).lower()
-
-    signals = [
-        "verdachte",
-        "verdachten",
-        "dader",
-        "daderschap",
-        "vermoedelijke dader",
-        "suspect",
-        "suspects",
-        "perpetrator",
-    ]
-
-    return any(
-        signal in text
-        for signal in signals
-    )
-
-
 def title_words_for_case(case_title):
 
     title_lower = case_title.lower()
@@ -378,6 +356,7 @@ def title_words_for_case(case_title):
         )
 
         if len(cleaned) >= 4:
+
             words.append(cleaned)
 
     return words
@@ -399,6 +378,7 @@ def matching_title_words(
     ):
 
         if word in alt_lower:
+
             matches.append(word)
 
     return matches
@@ -434,7 +414,7 @@ def score_candidate(
     reasons = []
 
     # -------------------------------------------------
-    # Algemene / technische afbeeldingen
+    # Technische / algemene afbeeldingen
     # -------------------------------------------------
 
     if is_social_or_tracking(url):
@@ -453,12 +433,6 @@ def score_candidate(
 
         return -1000, [
             "algemene website-context"
-        ]
-
-    if is_sensitive_person_image(item):
-
-        return -1000, [
-            "verdachte/dader-signaal"
         ]
 
     if width == 1 and height == 1:
@@ -528,6 +502,8 @@ def score_candidate(
             "alt-tekst past bij dossier"
         )
 
+    # Algemene alt-tekst is een negatief signaal.
+
     generic_penalty = generic_alt_penalty(
         alt
     )
@@ -541,14 +517,13 @@ def score_candidate(
         )
 
     # -------------------------------------------------
-    # Verhouding
+    # Geschikte verhouding
     # -------------------------------------------------
 
     if width and height:
 
         ratio = width / height
 
-        # Algemene portretverhouding
         if 0.55 <= ratio <= 1.15:
 
             score += 15
@@ -557,18 +532,14 @@ def score_candidate(
                 "geschikte portretverhouding"
             )
 
-        # Sterkere voorkeur voor duidelijk
-        # staande portretten.
-        if 0.65 <= ratio <= 0.95:
-
-            score += 30
-
-            reasons.append(
-                "sterke portretverhouding"
-            )
-
     # -------------------------------------------------
-    # Gedeelde afbeeldingen
+    # Gedeelde afbeelding
+    #
+    # We tellen unieke dossier-slugs.
+    #
+    # Een afbeelding die meerdere keren op
+    # hetzelfde dossier staat telt dus niet
+    # als gedeeld.
     # -------------------------------------------------
 
     duplicate_count = duplicate_urls.get(
@@ -598,6 +569,9 @@ def score_candidate(
 
     # -------------------------------------------------
     # Bestandsnaam
+    #
+    # Dit is slechts een extra signaal.
+    # We vertrouwen hier niet uitsluitend op.
     # -------------------------------------------------
 
     if has_unwanted_filename(url):
@@ -606,45 +580,6 @@ def score_candidate(
 
         reasons.append(
             "technische/tijdlijn-bestandsnaam"
-        )
-
-    # -------------------------------------------------
-    # Positie op de pagina
-    #
-    # De eerste inhoudelijke afbeeldingen krijgen
-    # een kleine extra voorkeur.
-    #
-    # Dit is expres geen harde regel:
-    # inhoudelijke signalen blijven belangrijker.
-    # -------------------------------------------------
-
-    order = item.get(
-        "order",
-        999
-    )
-
-    if order == 0:
-
-        score += 15
-
-        reasons.append(
-            "eerste inhoudsafbeelding"
-        )
-
-    elif order == 1:
-
-        score += 10
-
-        reasons.append(
-            "tweede inhoudsafbeelding"
-        )
-
-    elif order == 2:
-
-        score += 5
-
-        reasons.append(
-            "derde inhoudsafbeelding"
         )
 
     return score, reasons
@@ -744,14 +679,6 @@ with open(
 
 # -------------------------------------------------
 # Optionele beperking
-#
-# Bijvoorbeeld:
-#
-# ONLY_SLUGS="willeke-dost"
-#
-# of:
-#
-# ONLY_SLUGS="john-yellowley,duncan-zwakke"
 # -------------------------------------------------
 
 only = os.environ.get(
