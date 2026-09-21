@@ -8,10 +8,6 @@ on:
         required: false
         default: "john-yellowley"
 
-  push:
-    branches:
-      - test-auto-dossier-foto
-
 permissions:
   contents: write
 
