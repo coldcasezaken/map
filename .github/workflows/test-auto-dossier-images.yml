@@ -1,0 +1,50 @@
+name: Test automatische dossierfoto's
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Alleen deze dossier-slugs"
+        required: false
+        default: "john-yellowley"
+
+  push:
+    branches:
+      - test-auto-dossier-foto
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout testbranch
+        uses: actions/checkout@v4
+        with:
+          ref: test-auto-dossier-foto
+
+      - name: Python instellen
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Foto automatisch zoeken
+        env:
+          ONLY_SLUGS: ${{ inputs.only }}
+        run: python3 scripts/fetch_dossier_images.py
+
+      - name: Wijzigingen opslaan
+        run: |
+          git config user.name "coldcasezaken-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- cases.json; then
+            echo "Geen wijzigingen."
+            exit 0
+          fi
+
+          git add cases.json
+          git commit -m "Test automatische dossierfoto ophalen"
+          git push origin HEAD:test-auto-dossier-foto
