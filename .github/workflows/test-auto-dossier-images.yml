@@ -6,7 +6,11 @@ on:
       only:
         description: "Alleen deze dossier-slugs"
         required: false
-        default: "john-yellowley"
+        default: "ingrid-hakkert"
+
+  push:
+    branches:
+      - test-auto-dossier-foto
 
 permissions:
   contents: write
@@ -29,7 +33,8 @@ jobs:
       - name: Foto automatisch zoeken
         env:
           ONLY_SLUGS: ${{ inputs.only }}
-        run: python3 scripts/fetch_dossier_images.py
+        run: |
+          python3 scripts/fetch_dossier_images.py
 
       - name: Wijzigingen opslaan
         run: |
@@ -37,10 +42,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if git diff --quiet -- cases.json; then
-            echo "Geen wijzigingen."
+            echo "Geen wijzigingen in cases.json."
             exit 0
           fi
 
           git add cases.json
-          git commit -m "Update cases.json"
+          git commit -m "Test automatische dossierfoto ophalen"
           git push origin HEAD:test-auto-dossier-foto
