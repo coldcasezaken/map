@@ -239,7 +239,7 @@ def title_words_for_case(case_title):
     for word in title_lower.split():
 
         cleaned = word.strip(
-            ".,:;!?()[]{}\"'"
+            ". ,:;!?()[]{}\"'"
         )
 
         if len(cleaned) >= 4:
@@ -276,6 +276,7 @@ def score_candidate(
 ):
 
     url = item["url"]
+
     alt = item.get(
         "alt",
         ""
@@ -507,16 +508,16 @@ def make_case_id(case):
     text = text.lower()
 
     prefixes = [
-        "de vermissing van ",
         "de vermissing van de ",
-        "de moord op ",
+        "de vermissing van ",
         "de moord op de ",
-        "de verdwijning van ",
+        "de moord op ",
         "de verdwijning van de ",
-        "de dood van ",
+        "de verdwijning van ",
         "de dood van de ",
-        "de zaak van ",
+        "de dood van ",
         "de zaak van de ",
+        "de zaak van ",
     ]
 
     for prefix in prefixes:
@@ -552,6 +553,10 @@ def make_case_id(case):
     return text
 
 
+# ==============================================
+# CASES.JSON INLEZEN
+# ==============================================
+
 with open(
     CASES_FILE,
     "r",
@@ -579,7 +584,7 @@ print(
 )
 
 print(
-    " AUTOMATISCHE DOSSIERFOTO + ID — TEST V2"
+    " AUTOMATISCHE DOSSIERFOTO + ID — TEST V3"
 )
 
 print(
@@ -611,8 +616,8 @@ print(
 print("")
 
 print(
-    "Bestaande ID's en handmatige foto's "
-    "worden nooit overschreven."
+    "Bestaande handmatige foto's worden nooit "
+    "overschreven."
 )
 
 print("")
@@ -647,6 +652,7 @@ for index, case in enumerate(cases):
         continue
 
     case_id = base_id
+
     counter = 2
 
     while case_id in id_map:
@@ -655,9 +661,12 @@ for index, case in enumerate(cases):
 
         counter += 1
 
-    if not existing_id:
+    # BELANGRIJK:
+    # De unieke ID wordt altijd teruggeschreven
+    # naar het record, ook wanneer er al een ID
+    # aanwezig was maar die dubbel bleek te zijn.
 
-        case["id"] = case_id
+    case["id"] = case_id
 
     id_map[case_id] = index
 
@@ -735,6 +744,7 @@ for number_index, entry in enumerate(
 ):
 
     case = entry["case"]
+
     slug = entry["slug"]
 
     print(
@@ -824,7 +834,9 @@ new_images = []
 for result in scanned:
 
     case = result["case"]
+
     slug = result["slug"]
+
     images = result["images"]
 
     existing_image = str(
@@ -885,11 +897,37 @@ for result in scanned:
 
 
 # ==============================================
+# BELANGRIJK:
+# CASES.JSON DAADWERKELIJK OPSLAAN
+# ==============================================
+
+with open(
+    CASES_FILE,
+    "w",
+    encoding="utf-8"
+) as file:
+
+    json.dump(
+        cases,
+        file,
+        ensure_ascii=False,
+        separators=(",", ":")
+    )
+
+    file.write("\n")
+
+
+print("")
+print(
+    "cases.json is daadwerkelijk opgeslagen."
+)
+print("")
+
+
+# ==============================================
 # SAMENVATTING
 # ==============================================
 
-print("")
-print("")
 print(
     "=============================================="
 )
