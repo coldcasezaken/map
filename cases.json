@@ -2648,20 +2648,13 @@
     "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
     "id": "leon-kok-2002-geen-sitedossier"
   },
-  {
-    "lat": 51.580414,
-    "lng": 4.755198,
-    "title": "De moord op Corné Balemans 2002 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "corne-balemans-2002-geen-sitedossier"
-  },
-  {
+    {
     "lat": 50.886434,
     "lng": 5.973747,
     "title": "De moord op Patrick van der Bolt 2002 (geen sitedossier)",
     "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "patrick-van-der-bolt-2002-geen-sitedossier"
-  },
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/putman-high.png?enable-io=true&enable=upscale&crop=0.8148%3A1&width=800"
+ },
   {
     "lat": 51.87364,
     "lng": 4.47716,
