@@ -6,13 +6,12 @@
     "link": "https://www.coldcasezaken.nl/ingrid-hakkert",
     "id": "ingrid-hakkert"
   },
-  {
-    "lat": 51.938211,
-    "lng": 4.537739,
-    "title": "Verdwijning van Geertje Vliegenthart",
+    {
+    "lat": 51.938272,
+    "lng": 4.538273,
+    "title": "De vermissing van Geertje Vliegenthart 2001",
     "link": "https://www.coldcasezaken.nl/geertje-vliegenthart-roest",
-    "id": "verdwijning-van-geertje-vliegenthart",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/schermopname_19-10-2025_19117_www-bing-com-standard-c6qd9g.jpg"
+    "id": "geertje-vliegenthart"
   },
   {
     "lat": 52.090298,
@@ -1212,13 +1211,6 @@
     "link": "https://www.coldcasezaken.nl/maartje-mariska-klompenhouwer",
     "id": "mariska-klompenhouwer",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/ysi5ug/1-185.jpg?enable-io=true&enable=upscale&crop=0.9875%3A1&width=800"
-  },
-  {
-    "lat": 51.938272,
-    "lng": 4.538273,
-    "title": "De vermissing van Geertje Vliegenthart 2001",
-    "link": "Edmond van Hellenraadstraat Geertje Vliegenthart",
-    "id": "geertje-vliegenthart"
   },
   {
     "lat": 50.957989,
@@ -2648,13 +2640,14 @@
     "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
     "id": "leon-kok-2002-geen-sitedossier"
   },
-    {
+      {
     "lat": 50.886434,
     "lng": 5.973747,
     "title": "De moord op Patrick van der Bolt 2002 (geen sitedossier)",
     "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
+    "id": "patrick-van-der-bolt",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/putman-high.png?enable-io=true&enable=upscale&crop=0.8148%3A1&width=800"
- },
+  },
   {
     "lat": 51.87364,
     "lng": 4.47716,
