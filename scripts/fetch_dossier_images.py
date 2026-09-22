@@ -911,7 +911,7 @@ with open(
         cases,
         file,
         ensure_ascii=False,
-        separators=(",", ":")
+        indent=2
     )
 
     file.write("\n")
