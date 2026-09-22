@@ -6,7 +6,7 @@ on:
       only:
         description: "Alleen deze dossier-slugs"
         required: false
-        default: "ingrid-hakkert"
+        default: ""
 
 permissions:
   contents: write
@@ -37,7 +37,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if git diff --quiet -- cases.json; then
-            echo "Geen wijzigingen in cases.json."
+            echo "Geen wijzigingen."
             exit 0
           fi
 
