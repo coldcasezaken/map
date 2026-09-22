@@ -6,7 +6,7 @@ on:
       only:
         description: "Alleen deze dossier-slugs"
         required: false
-        default: "ingrid-hakkert"
+        default: ""
 
 permissions:
   contents: write
