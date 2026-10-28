@@ -1,141 +1,128 @@
-    "id": "hendrik-jan-van-houten-2003-geen-sitedossier",
-    "geoPlace": "Wageningen"
+[
+  {
+    "lat": 51.661241,
+    "lng": 5.390367,
+    "title": "De moord op Ingrid Hakkert",
+    "link": "https://www.coldcasezaken.nl/ingrid-hakkert",
+    "id": "ingrid-hakkert",
+    "geoPlace": "Den Dungen"
   },
   {
-    "lat": 52.060852,
-    "lng": 5.133585,
-    "title": "De vermissing van Churisan Allen 2018 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "churisan-allen-2018-geen-sitedossier",
-    "geoPlace": "Utrecht"
+    "lat": 51.938272,
+    "lng": 4.538273,
+    "title": "De vermissing van Geertje Vliegenthart 2001",
+    "link": "https://www.coldcasezaken.nl/geertje-vliegenthart-roest",
+    "id": "geertje-vliegenthart",
+    "geoPlace": "Rotterdam"
   },
   {
-    "lat": 51.034094,
-    "lng": 3.637569,
-    "title": "De vermissing van Mieke Kuijpers 2014 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "mieke-kuijpers-2014-geen-sitedossier-2",
-    "geoPlace": "Gent"
+    "lat": 52.090298,
+    "lng": 5.34139,
+    "title": "Verdwijning Hanno van Mil",
+    "link": "https://www.coldcasezaken.nl/hanno-van-mil",
+    "id": "verdwijning-hanno-van-mil",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/large-vecteezy_a-dark-room-with-a-light-at-the-top_30648142_large-high.jpg?enable-io=true&enable=upscale&crop=0.772%3A1&width=800",
+    "geoPlace": "Woudenberg"
   },
   {
-    "lat": 51.730242,
-    "lng": 5.877778,
-    "title": "De vermissing van Jan en Riet Kelders 1989 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "jan-en-riet-kelders-1989-geen-sitedossier",
-    "geoPlace": "Cuijk"
+    "lat": 51.499324,
+    "lng": 5.317251,
+    "title": "De moord op Jan Schoenmakers 1967",
+    "link": "https://www.coldcasezaken.nl/jan-schoenmakers",
+    "id": "jan-schoenmakers",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-237.jpg",
+    "geoPlace": "Oirschot"
   },
   {
-    "lat": 53.202554,
-    "lng": 6.56888,
-    "title": "De moord op Annet van Akkeren 1982 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "annet-van-akkeren-1982-geen-sitedossier",
-    "geoPlace": "Groningen"
+    "lat": 53.199036,
+    "lng": 5.808656,
+    "title": "De moord op Hinke van der Velde 1970",
+    "link": "https://www.coldcasezaken.nl/hinke-van-der-velde",
+    "id": "hinke-van-der-velde",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/image-7.png",
+    "geoPlace": "Leeuwarden"
   },
   {
-    "lat": 52.154197,
-    "lng": 4.946079,
-    "title": "De moord op Irene Bernet 1984",
-    "link": "https://www.coldcasezaken.nl/irene-bernet",
-    "id": "irene-bernet",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/screenshot-2026-01-21-alle-10-39-13-high.png?enable-io=true&enable=upscale&crop=0.7759%3A1&width=800",
-    "geoPlace": "Kockengen"
-  },
-  {
-    "lat": 51.948614,
-    "lng": 6.34661,
-    "title": "De moord op Rinie Wielheesen 1970 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "rinie-wielheesen-1970-geen-sitedossier",
-    "geoPlace": "Doetinchem"
-  },
-  {
-    "lat": 52.468731,
-    "lng": 6.708808,
-    "title": "De vermissing Frans Olthof 1995 ",
-    "link": "https://www.coldcasezaken.nl/frans-olthof",
-    "id": "de-vermissing-frans-olthof",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/91c7b4d0b1243b8d5c1447510ddf7e552ba96321-high-j6c6ee.png?enable-io=true&enable=upscale&crop=0.6789%3A1&width=800",
-    "geoPlace": "Langeveen"
-  },
-  {
-    "lat": 52.036506,
-    "lng": 4.701798,
-    "title": "De moord op Ewoud Siegers 2014 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "ewoud-siegers-2014-geen-sitedossier",
-    "geoPlace": "Gouda"
-  },
-  {
-    "lat": 51.083053,
-    "lng": 4.135659,
-    "title": "De moord op Lodewijk Genbrugge 1994",
-    "link": "https://www.coldcasezaken.nl/lodewijk-louis-genbrugge",
-    "id": "lodewijk-genbrugge",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/louis-genbrugge-enhanced-standard.jpg",
-    "geoPlace": "Hamme"
-  },
-  {
-    "lat": 52.372612,
-    "lng": 4.897087,
-    "title": "De moord op Geert Jacobus Gernand 1984",
-    "link": "https://www.coldcasezaken.nl/geert-gernand",
-    "id": "geert-jacobus-gernand",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/chatgpt-image-5-aug-2026-19_39_42-high.png?enable-io=true&enable=upscale&crop=0.741%3A1%2Coffset-y61&width=800",
+    "lat": 52.400926,
+    "lng": 4.941733,
+    "title": "De vermissing van Alwin Sterk 1972",
+    "link": "https://www.coldcasezaken.nl/alwin-sterk",
+    "id": "alwin-sterk",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-111.jpg",
     "geoPlace": "Amsterdam"
   },
   {
-    "lat": 52.227394,
-    "lng": 5.176696,
-    "title": "De vermissing Marcel Putman 2001 ",
-    "link": "https://www.coldcasezaken.nl/marcel-putman",
-    "id": "de-vermissing-marcel-putman",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/putman-high.png?enable-io=true&enable=upscale&crop=0.8148%3A1&width=800",
-    "geoPlace": "Hilversum"
+    "lat": 50.963459,
+    "lng": 5.842801,
+    "title": "De vermissing van Marjo Winkens 1975 (exacte vermissingslocatie onbekend)",
+    "link": "https://www.coldcasezaken.nl/marjo-winkens",
+    "id": "marjo-winkens-1975-exacte-vermissingslocatie-onbekend",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/marjo_winkens3-high.webp?enable-io=true&enable=upscale&crop=0.7849%3A1&width=800",
+    "geoPlace": "Geleen"
   },
   {
-    "lat": 51.580503,
-    "lng": 4.75518,
-    "title": "De moord op Corné Baelmans 2002",
-    "link": "https://www.coldcasezaken.nl/corne-baelemans",
-    "id": "corne-baelmans",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/asasasas-high.png?enable-io=true&enable=upscale&crop=0.8245%3A1&width=800",
-    "geoPlace": "Breda"
+    "lat": 52.36453,
+    "lng": 4.959137,
+    "title": "De moord op Angela Mangot 1970",
+    "link": "https://www.coldcasezaken.nl/angela-mangot",
+    "id": "angela-mangot",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/ewkiyc/1-232.jpg?enable-io=true&enable=upscale&crop=1.2196%3A1&width=800",
+    "geoPlace": "Amsterdam"
   },
   {
-    "lat": 51.904221,
-    "lng": 4.481238,
-    "title": "Onbekend babylijkje 1996",
-    "link": "https://www.coldcasezaken.nl/onbekende-baby-rijnhaven",
-    "id": "onbekend-babylijkje-3",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/asasassaas-high-zj55j8.png?enable-io=true&enable=upscale&crop=1.1859%3A1%2Coffset-y62&width=800",
-    "geoPlace": "Rotterdam"
+    "lat": 52.054126,
+    "lng": 5.405424,
+    "title": "Het onbekende Heulmeisje 1976",
+    "link": "https://www.coldcasezaken.nl/ongeidentificeerde-doden/jane-doe-maarsbergen-heulmeisje",
+    "id": "het-onbekende-heulmeisje",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/nl01-main-photo-1-high-xh8g3j-1-high.jpg?enable-io=true&enable=upscale&crop=0.6118%3A1&width=800",
+    "geoPlace": "Maarsbergen"
   },
   {
-    "lat": 52.463269,
-    "lng": 4.628565,
-    "title": "De moord op John Yellowley 1998",
-    "link": "https://www.coldcasezaken.nl/john-yellowley",
-    "id": "john-yellowley",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/asasasas-standard-eeol96.png",
-    "geoPlace": "IJmuiden"
+    "lat": 52.374718,
+    "lng": 4.882874,
+    "title": "De moord op Gerhardus Goldschmeding 1976",
+    "link": "https://www.coldcasezaken.nl/gerhardus-goldschmeding",
+    "id": "gerhardus-goldschmeding",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/494358440_1620317942000575_6482884630819670994_n-high.png?enable-io=true&enable=upscale&crop=0.7232%3A1%2Coffset-y100&width=800",
+    "geoPlace": "Amsterdam"
   },
   {
-    "lat": 51.874584,
-    "lng": 4.477929,
-    "title": "De vermissing van Monika Tanova 2010",
-    "link": "https://www.coldcasezaken.nl/monika-tanova",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/saz-high.png",
-    "id": "monika-tanova",
-    "geoPlace": "Rotterdam"
+    "lat": 51.657248,
+    "lng": 5.820145,
+    "title": "De moord op Riky Bartels 1977",
+    "link": "https://www.coldcasezaken.nl/riky-bartels",
+    "id": "riky-bartels",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/iyoufq/bartels_riky_1960-1977.jpg?enable-io=true&enable=upscale&crop=1.3551%3A1&width=800",
+    "geoPlace": "Wanroij"
   },
   {
-    "lat": 51.580414,
-    "lng": 4.755198,
-    "title": "De moord op Corné Balemans 2002 (geen sitedossier)",
-    "link": "https://www.coldcasezaken.nl/zaak-zonder-dossier",
-    "id": "corne-balemans-2002-geen-sitedossier",
-    "geoPlace": "Breda"
-  }
-]
+    "lat": 52.376807,
+    "lng": 4.872332,
+    "title": "De vermissing van Willemijntje van der Meer 1978",
+    "link": "https://www.coldcasezaken.nl/willemijntje-van-der-meer",
+    "id": "willemijntje-van-der-meer",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-239.jpg",
+    "geoPlace": "Amsterdam"
+  },
+  {
+    "lat": 52.160489,
+    "lng": 4.495714,
+    "title": "De moord op Levie 'Louis' van Amerongen 1978",
+    "link": "https://www.coldcasezaken.nl/levie-van-amerongen",
+    "id": "levie-louis-van-amerongen",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/2-65.jpg",
+    "geoPlace": "Leiden"
+  },
+  {
+    "lat": 52.221188,
+    "lng": 5.991024,
+    "title": "De moord op Wendy Hart 1981",
+    "link": "https://www.coldcasezaken.nl/wendy-hart",
+    "id": "wendy-hart",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/ctexgj/11-1.jpeg?enable-io=true&enable=upscale&crop=0.8867%3A1%2Coffset-y0&width=800",
+    "geoPlace": "Apeldoorn"
+  },
+  {
+    "lat": 51.921858,
+    "lng": 4.505902,
