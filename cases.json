@@ -1,23 +1,14 @@
 [
   {
-    "lat": 51.661241,
-    "lng": 5.390367,
+    "lat": 51.660637,
+    "lng": 5.388278,
     "title": "De moord op Ingrid Hakkert",
     "link": "https://www.coldcasezaken.nl/ingrid-hakkert",
     "id": "ingrid-hakkert",
     "geoPlace": "Den Dungen",
     "category": "Moord"
   },
-  {
-    "lat": 51.938211,
-    "lng": 4.537739,
-    "title": "Verdwijning van Geertje Vliegenthart",
-    "link": "https://www.coldcasezaken.nl/geertje-vliegenthart-roest",
-    "id": "verdwijning-van-geertje-vliegenthart",
-    "geoPlace": "Rotterdam",
-    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/schermopname_19-10-2025_19117_www-bing-com-standard-c6qd9g.jpg",
-    "category": "Vermissing"
-  },
+
   {
     "lat": 52.090298,
     "lng": 5.34139,
@@ -1688,15 +1679,6 @@
     "geoPlace": "Den Haag",
     "category": "Vermissing",
     "year": 2001
-  },
-  {
-    "lat": 51.658913,
-    "lng": 5.375541,
-    "title": "De moord op Ingrid hakkert 2001",
-    "link": "https://www.coldcasezaken.nl/ingrid-hakkert",
-    "id": "ingrid-hakkert-2",
-    "geoPlace": "Den Dungen",
-    "category": "Moord"
   },
   {
     "lat": 50.937679,
