@@ -32,10 +32,10 @@ body.cc-map-mode{overflow-x:hidden!important;overflow-y:visible!important}body.c
 #ccExplorerMap .leaflet-container{width:100%;height:100%;font-family:inherit;background:#e7e9e8}
 #ccExplorerMap .leaflet-tile{filter:grayscale(1) saturate(.18) brightness(1.06)}
 #ccExplorerMap .marker-cluster{background:transparent!important;border:0!important}
-#ccExplorerMap .marker-cluster div{color:#fff!important;font-weight:600!important;border-radius:50%!important;border:1px solid rgba(34,69,118,.72)!important;box-shadow:0 0 0 6px rgba(34,69,118,.24)!important;text-align:center!important;box-sizing:border-box}
-#ccExplorerMap .cluster-small div{background:#6F89A7!important;width:38px!important;height:38px!important;line-height:36px!important}
-#ccExplorerMap .cluster-medium div{background:#52749A!important;width:50px!important;height:50px!important;line-height:48px!important}
-#ccExplorerMap .cluster-large div{background:#37628D!important;width:65px!important;height:65px!important;line-height:63px!important}
+#ccExplorerMap .marker-cluster div{color:#fff!important;font-weight:600!important;border-radius:50%!important;border:1px solid rgba(34,69,118,.25)!important;box-shadow:0 0 0 6px rgba(34,69,118,.12)!important;text-align:center!important;box-sizing:border-box}
+#ccExplorerMap .cluster-small div{background:rgba(111,137,167,.60)!important;width:38px!important;height:38px!important;line-height:36px!important}
+#ccExplorerMap .cluster-medium div{background:rgba(82,116,154,.60)!important;width:50px!important;height:50px!important;line-height:48px!important}
+#ccExplorerMap .cluster-large div{background:rgba(55,98,141,.60)!important;width:65px!important;height:65px!important;line-height:63px!important}
 #ccExplorerMap .cc-dot{width:16px;height:16px;border-radius:50%;background:#A52A32;border:2px solid #fff;box-sizing:border-box}
 #grid .cc-card:first-child .cc-photo{object-position:50% 80%!important;}
 @media(max-width:700px){#ccExplorerMap{height:420px!important;min-height:420px!important;max-height:420px!important}.cc-map-card{width:170px}.cc-map-card-title{font-size:15px;line-height:19px}}
@@ -191,17 +191,17 @@ body.cc-list-mode .list-top {
   transition:none!important;
 }
 #ccExplorerMap .marker-cluster-small div {
-  background:#6F89A7!important;
+  background:rgba(111,137,167,.60)!important;
 }
 #ccExplorerMap .marker-cluster-medium div {
-  background:#52749A!important;
+  background:rgba(82,116,154,.60)!important;
 }
 #ccExplorerMap .marker-cluster-large div {
-  background:#37628D!important;
+  background:rgba(55,98,141,.60)!important;
 }
 /* Grootste cluster / hoogste aantallen: Stichting-blauw */
 #ccExplorerMap .marker-cluster-extra-large div {
-  background:#224576!important;
+  background:rgba(34,69,118,.60)!important;
 }
 /* Losse punten: kleiner en donkerrood, zonder hover-effect */
 #ccExplorerMap .cc-dot {
@@ -529,13 +529,11 @@ body.cc-list-mode .list-top {
   function cleanTitle(c){return String(c&&(c.title||c.name)||'Onbekende cold case').replace(/\s*\(geen sitedossier\)\s*/ig,'').replace(/\s+(19|20)\d{2}\s*$/i,'').trim()}
   function caseDetails(c){
     var meta=caseMetaFor(c), title=cleanTitle(c), raw=String(c&&(c.title||c.name)||'');
-    if(meta){
-      return {title:title,year:String(meta.year||''),type:String(meta.type||''),place:String(meta.place||''),href:String(meta.link||'')};
-    }
-    var year=(c&&c.year)||((raw.match(/\b(19|20)\d{2}\b/)||[])[0]) || '';
-    var type=(c&&c.type)||(/vermissing|verdwijning/i.test(raw)?'Vermissing':(/onbekende|ongeïdentificeerde|ongeidentificeerde/i.test(raw)?'Onbekende doden':(/moord|dood/i.test(raw)?'Moord':'Overige')));
-    var place=(c&&(c.place||c.location||c.city)) || '';
-    var href=(c&&(c.link||c.url)) || '';
+    /* cases.json is the source of truth for category, year and place where supplied. */
+    var year=(c&&c.year)||((meta&&meta.year)||'')||((raw.match(/\b(19|20)\d{2}\b/)||[])[0])||'';
+    var type=(c&&(c.category||c.type))||(meta&&meta.type)||(/vermissing|verdwijning/i.test(raw)?'Vermissing':(/onbekende|ongeïdentificeerde|ongeidentificeerde/i.test(raw)?'Onbekende doden':(/moord|dood/i.test(raw)?'Moord':'Overige')));
+    var place=(c&&c.geoPlace)||(meta&&meta.place)||(c&&(c.place||c.location||c.city))||'';
+    var href=(c&&(c.link||c.url))||(meta&&meta.link)||'';
     return {title:title,year:String(year||''),type:String(type||''),place:String(place||''),href:String(href||'')};
   }
   function typeKey(type){return String(type||'').toLowerCase().replace(/[^a-z]/g,'').replace('onbekendedoden','onbekendedoden')}
@@ -696,13 +694,13 @@ return {category:c.type||'',place:c.place||c.location||c.city||'',year:c.year||'
   }
   function popupHtml(c){
     var d=getListDetails(c), title=String(c.title||c.name||'Onbekende cold case').replace(/\s*\(geen sitedossier\)\s*/ig,'').replace(/\s+(19|20)\d{2}\s*$/i,'').trim();
-    var type=d&&d.category?d.category:(c.type||''),year=d&&d.year?d.year:(c.year||''),place=d&&d.place?d.place:(c.place||''),meta=caseMetaFor(c),href=(meta&&meta.link)||c.link||c.url||(d&&d.link)||'',image=cleanImageUrl(getCardImage(c));
+    var type=d&&d.category?d.category:(c.type||''),year=d&&d.year?d.year:(c.year||''),place=(c.geoPlace&&String(c.geoPlace).trim())?String(c.geoPlace).trim():(d&&d.place?d.place:(c.place||'')),meta=caseMetaFor(c),href=(meta&&meta.link)||c.link||c.url||(d&&d.link)||'',image=cleanImageUrl(getCardImage(c));
     var photo=image?'<img class="cc-leaflet-photo" src="'+esc(image)+'" alt="">':'';
 var noDossier=href&&href.indexOf('/zaak-zonder-dossier')!==-1;var link=href?'<a class="cc-leaflet-link" href="'+esc(href)+'" target="_top" rel="noopener">'+(noDossier?'Geef een tip »':'Bekijk dossier »')+'</a>':'';    return '<div class="cc-popup-inner">'+photo+'<div class="cc-leaflet-type">'+esc(type)+'</div><div class="cc-leaflet-title">'+esc(title)+'</div>'+(year?'<div class="cc-leaflet-year">'+esc(year)+'</div>':'')+(place?'<div class="cc-leaflet-place">'+esc(place)+'</div>':'')+link+'</div>';
   }
   function bindPopupHover(){if(!activePopup)return;var el=activePopup.getElement();if(!el)return;el.onmouseenter=function(){popupHover=true;cancelHoverClose();};el.onmouseleave=function(){popupHover=false;scheduleHoverClose();};}
   function showCard(c,marker,pin){cancelHoverClose();if(activePopup&&map)map.closePopup(activePopup);activeMarker=marker;popupPinned=!!pin;activePopup=L.popup({className:'cc-custom-leaflet-popup',closeButton:false,autoClose:false,closeOnClick:false,autoPan:true,autoPanPadding:[18,18],offset:[0,10],maxWidth:228,minWidth:170}).setLatLng(marker.getLatLng()).setContent(popupHtml(c)).openOn(map);setTimeout(bindPopupHover,0);}
-  function initMap(){if(map){setTimeout(function(){map.invalidateSize()},80);return;} map=L.map('ccExplorerMap',{zoomControl:true,preferCanvas:true,minZoom:6,maxZoom:18,zoomSnap:.5}).setView([52.15,5.30],7.5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map); clusterGroup=L.markerClusterGroup({showCoverageOnHover:false,spiderfyOnMaxZoom:true,zoomToBoundsOnClick:true,maxClusterRadius:42,disableClusteringAtZoom:13,animate:true,animateAddingMarkers:false,iconCreateFunction:function(cluster){var n=cluster.getChildCount(),sz=clusterSize(n);return L.divIcon({html:'<div>'+n+'</div>',className:'marker-cluster '+clusterClass(n),iconSize:[sz,sz]})}}); fetch('https://raw.githubusercontent.com/coldcasezaken/map/main/cases.json?v=' + Date.now()).then(function(r){if(!r.ok)throw new Error('main cases.json kon niet worden geladen');return r.json()}).catch(function(){return fetch('https://raw.githubusercontent.com/coldcasezaken/map/coldcase-explorer-test/cases.json').then(function(r){if(!r.ok)throw new Error('cases.json kon niet worden geladen');return r.json()})}).then(function(raw){var cases=Array.isArray(raw)?raw:(Array.isArray(raw.cases)?raw.cases:Array.isArray(raw.data)?raw.data:Array.isArray(raw.features)?raw.features:Object.keys(raw).map(function(k){return raw[k]}).find(Array.isArray)||[]); renderAllCases(cases); cases.forEach(function(c){var lat=Number(c.lat!=null?c.lat:c.latitude),lng=Number(c.lng!=null?c.lng:(c.lon!=null?c.lon:c.longitude));if(!Number.isFinite(lat)||!Number.isFinite(lng))return;var marker=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="cc-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]})});marker.__case=c;
+  function initMap(){if(map){setTimeout(function(){map.invalidateSize()},80);return;} map=L.map('ccExplorerMap',{zoomControl:true,preferCanvas:true,minZoom:6,maxZoom:18,zoomSnap:.5}).setView([52.15,5.30],7.5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map); clusterGroup=L.markerClusterGroup({showCoverageOnHover:false,spiderfyOnMaxZoom:true,zoomToBoundsOnClick:true,maxClusterRadius:42,disableClusteringAtZoom:13,animate:true,animateAddingMarkers:false,iconCreateFunction:function(cluster){var n=cluster.getChildCount(),sz=clusterSize(n);return L.divIcon({html:'<div>'+n+'</div>',className:'marker-cluster '+clusterClass(n),iconSize:[sz,sz]})}}); fetch('./cases.json?v=' + Date.now()).then(function(r){if(!r.ok)throw new Error('cases.json kon niet worden geladen');return r.json()}).then(function(raw){var cases=Array.isArray(raw)?raw:(Array.isArray(raw.cases)?raw.cases:Array.isArray(raw.data)?raw.data:Array.isArray(raw.features)?raw.features:Object.keys(raw).map(function(k){return raw[k]}).find(Array.isArray)||[]);return cases;}).then(function(cases){renderAllCases(cases); cases.forEach(function(c){var lat=Number(c.lat!=null?c.lat:c.latitude),lng=Number(c.lng!=null?c.lng:(c.lon!=null?c.lon:c.longitude));if(!Number.isFinite(lat)||!Number.isFinite(lng))return;var marker=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="cc-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]})});marker.__case=c;
   marker.on('mouseover',function(){if(window.matchMedia&&!window.matchMedia('(hover:hover)').matches)return;markerHover=true;cancelHoverClose();showCard(c,marker,false);});
 marker.on('mouseout',function(){if(window.matchMedia&&!window.matchMedia('(hover:hover)').matches)return;markerHover=false;scheduleHoverClose();});    
      marker.on('click',function(e){if(e&&e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);markerHover=true;showCard(c,marker,true);});                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      marker.on('click',function(e){if(e&&e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);markerHover=true;showCard(c,marker,true);});
