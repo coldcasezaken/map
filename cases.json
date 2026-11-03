@@ -1,15 +1,15 @@
 [
- {
-  "lat": 8.833683,
-  "lng": -82.426167,
-  "title": "Verdwijning van Kris Kremers en Lisanne Froon - Panama 2014",
-  "link": "https://www.coldcasezaken.nl/kris-kremers-en-lisanne-froon",
-  "id": "kris-kremers-lisanne-froon",
-  "geoPlace": "Boquete",
-  "category": "Overige",
-  "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/kremersfroonthumbsup-high.webp"
-  "year": 2014
-},  
+  {
+    "lat": 8.833683,
+    "lng": -82.426167,
+    "title": "Verdwijning van Kris Kremers en Lisanne Froon - Panama 2014",
+    "link": "https://www.coldcasezaken.nl/kris-kremers-en-lisanne-froon",
+    "id": "kris-kremers-lisanne-froon",
+    "geoPlace": "Boquete",
+    "category": "Overige",
+    "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/kremersfroonthumbsup-high.webp",
+    "year": 2014
+  },
   {
     "lat": 51.660637,
     "lng": 5.388278,
@@ -17,10 +17,10 @@
     "link": "https://www.coldcasezaken.nl/ingrid-hakkert",
     "id": "ingrid-hakkert",
     "geoPlace": "Den Dungen",
-    "category": "Moord"
+    "category": "Moord",
     "year": 2001
   },
- {
+  {
     "lat": 52.090298,
     "lng": 5.34139,
     "title": "Verdwijning Hanno van Mil",
@@ -28,7 +28,7 @@
     "id": "verdwijning-hanno-van-mil",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/large-vecteezy_a-dark-room-with-a-light-at-the-top_30648142_large-high.jpg?enable-io=true&enable=upscale&crop=0.772%3A1&width=800",
     "geoPlace": "Woudenberg",
-    "category": "Vermissing"
+    "category": "Vermissing",
     "year": 2014
   },
   {
@@ -699,7 +699,7 @@
     "id": "lisette-vroege",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/lisettevroege2-1.jpg",
     "geoPlace": "Haarlem",
-    "category": "Vermissing"
+    "category": "Vermissing",
     "year": 1992
   },
   {
@@ -798,7 +798,7 @@
     "id": "marinus-terwoert",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/image-58.png",
     "geoPlace": "Klein Valkenisse",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1993
   },
   {
@@ -809,7 +809,7 @@
     "id": "suicide-onbekende-man",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/9vu1ix/image-64.png?enable-io=true&enable=upscale&crop=1.7009%3A1&width=800",
     "geoPlace": "Didam",
-    "category": "Onbekende doden"
+    "category": "Onbekende doden",
     "year": 1992
   },
   {
@@ -853,7 +853,7 @@
     "id": "tania-van-kerkhoven",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/2-47.jpg",
     "geoPlace": "Antwerpen",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1993
   },
   {
@@ -963,7 +963,7 @@
     "id": "jessica-yecca-de-roij",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/3hckyb/1-120.jpg?enable-io=true&enable=upscale&crop=0.8949%3A1&width=800",
     "geoPlace": "Helmond",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1994
   },
   {
@@ -1007,7 +1007,7 @@
     "id": "mohamed-baksoellah",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-118.jpg",
     "geoPlace": "Den Haag",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1995
   },
   {
@@ -1149,7 +1149,7 @@
     "id": "mien-berden",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/352-b_25916_pagina_1-standard.jpg",
     "geoPlace": "Grashoek",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1996
   },
   {
@@ -1171,7 +1171,7 @@
     "id": "kim-veronica-camarines",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/555.jpg",
     "geoPlace": "Rotterdam",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1996
   },
   {
@@ -1556,7 +1556,7 @@
     "id": "riet-poot",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-71.jpg",
     "geoPlace": "Maassluis",
-    "category": "Moord"
+    "category": "Moord",
     "year": 1999
   },
   {
@@ -2171,7 +2171,7 @@
     "id": "roeland-oosten",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/j6oduh/1-157.jpg?enable-io=true&enable=upscale&crop=0.6735%3A1&width=800",
     "geoPlace": "Groningen",
-    "category": "Moord"
+    "category": "Moord",
     "year": 2007
   },
   {
@@ -2644,7 +2644,7 @@
     "id": "hanno-van-mil",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/large-vecteezy_a-dark-room-with-a-light-at-the-top_30648142_large-high.jpg?enable-io=true&enable=upscale&crop=0.772%3A1&width=800",
     "geoPlace": "Woudenberg",
-    "category": "Vermissing"
+    "category": "Vermissing",
     "year": 2014
   },
   {
@@ -2721,7 +2721,7 @@
     "id": "susanna-boon",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/image-high-xhya2n.png?enable-io=true&enable=upscale&crop=1.0863%3A1&width=800",
     "geoPlace": "Nunspeet",
-    "category": "Moord"
+    "category": "Moord",
     "year": 2016
   },
   {
@@ -4672,7 +4672,7 @@
     "id": "john-yellowley",
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/asasasas-standard-eeol96.png",
     "geoPlace": "IJmuiden",
-    "category": "Nog controleren"
+    "category": "Nog controleren",
     "year": 1998
   },
   {
@@ -4683,7 +4683,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/saz-high.png",
     "id": "monika-tanova",
     "geoPlace": "Rotterdam",
-    "category": "Nog controleren"
+    "category": "Nog controleren",
     "year": 2010
   }
 ]
