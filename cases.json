@@ -1,4 +1,15 @@
 [
+ {
+  "lat": 8.833683,
+  "lng": -82.426167,
+  "title": "Verdwijning van Kris Kremers en Lisanne Froon - Panama 2014",
+  "link": "https://www.coldcasezaken.nl/kris-kremers-en-lisanne-froon",
+  "id": "kris-kremers-lisanne-froon",
+  "geoPlace": "Boquete",
+  "category": "Overige",
+  "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/kremersfroonthumbsup-high.webp"
+  "year": 2014
+},  
   {
     "lat": 51.660637,
     "lng": 5.388278,
@@ -7,9 +18,9 @@
     "id": "ingrid-hakkert",
     "geoPlace": "Den Dungen",
     "category": "Moord"
+    "year": 2001
   },
-
-  {
+ {
     "lat": 52.090298,
     "lng": 5.34139,
     "title": "Verdwijning Hanno van Mil",
@@ -18,6 +29,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/large-vecteezy_a-dark-room-with-a-light-at-the-top_30648142_large-high.jpg?enable-io=true&enable=upscale&crop=0.772%3A1&width=800",
     "geoPlace": "Woudenberg",
     "category": "Vermissing"
+    "year": 2014
   },
   {
     "lat": 51.499324,
@@ -688,6 +700,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/lisettevroege2-1.jpg",
     "geoPlace": "Haarlem",
     "category": "Vermissing"
+    "year": 1992
   },
   {
     "lat": 50.923591,
@@ -786,6 +799,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/image-58.png",
     "geoPlace": "Klein Valkenisse",
     "category": "Moord"
+    "year": 1993
   },
   {
     "lat": 51.95724,
@@ -796,6 +810,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/9vu1ix/image-64.png?enable-io=true&enable=upscale&crop=1.7009%3A1&width=800",
     "geoPlace": "Didam",
     "category": "Onbekende doden"
+    "year": 1992
   },
   {
     "lat": 52.195579,
@@ -839,6 +854,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/2-47.jpg",
     "geoPlace": "Antwerpen",
     "category": "Moord"
+    "year": 1993
   },
   {
     "lat": 52.385005,
@@ -948,6 +964,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/3hckyb/1-120.jpg?enable-io=true&enable=upscale&crop=0.8949%3A1&width=800",
     "geoPlace": "Helmond",
     "category": "Moord"
+    "year": 1994
   },
   {
     "lat": 51.963775,
@@ -991,6 +1008,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-118.jpg",
     "geoPlace": "Den Haag",
     "category": "Moord"
+    "year": 1995
   },
   {
     "lat": 51.907454,
@@ -1132,6 +1150,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/352-b_25916_pagina_1-standard.jpg",
     "geoPlace": "Grashoek",
     "category": "Moord"
+    "year": 1996
   },
   {
     "lat": 52.081204,
@@ -1153,6 +1172,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/555.jpg",
     "geoPlace": "Rotterdam",
     "category": "Moord"
+    "year": 1996
   },
   {
     "lat": 51.064087,
@@ -1537,6 +1557,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/1-71.jpg",
     "geoPlace": "Maassluis",
     "category": "Moord"
+    "year": 1999
   },
   {
     "lat": 51.08014,
@@ -2151,6 +2172,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/j6oduh/1-157.jpg?enable-io=true&enable=upscale&crop=0.6735%3A1&width=800",
     "geoPlace": "Groningen",
     "category": "Moord"
+    "year": 2007
   },
   {
     "lat": 52.228085,
@@ -2623,6 +2645,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/large-vecteezy_a-dark-room-with-a-light-at-the-top_30648142_large-high.jpg?enable-io=true&enable=upscale&crop=0.772%3A1&width=800",
     "geoPlace": "Woudenberg",
     "category": "Vermissing"
+    "year": 2014
   },
   {
     "lat": 53.325778,
@@ -2699,6 +2722,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/image-high-xhya2n.png?enable-io=true&enable=upscale&crop=1.0863%3A1&width=800",
     "geoPlace": "Nunspeet",
     "category": "Moord"
+    "year": 2016
   },
   {
     "lat": 51.488233,
@@ -4649,6 +4673,7 @@
     "image": "https://primary.jwwb.nl/public/t/l/i/temp-bqjoudxtrdpcquxbogqx/asasasas-standard-eeol96.png",
     "geoPlace": "IJmuiden",
     "category": "Nog controleren"
+    "year": 1998
   },
   {
     "lat": 51.874584,
@@ -4659,5 +4684,6 @@
     "id": "monika-tanova",
     "geoPlace": "Rotterdam",
     "category": "Nog controleren"
+    "year": 2010
   }
 ]
