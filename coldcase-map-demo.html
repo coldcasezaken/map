@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coldcasezaken – kaartdemo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<style>
+:root{--navy:#224576;--red:#C6534C;--line:#D7DEE7;--muted:#68778A}
+*{box-sizing:border-box}html,body,#map{margin:0;width:100%;height:100%;font-family:Arial,Helvetica,sans-serif}#map{position:absolute;inset:0;background:#edf1f4}
+.panel{position:absolute;z-index:1000;top:14px;left:50%;transform:translateX(-50%);width:min(980px,calc(100% - 28px));background:#fffffff2;border:1px solid var(--line);border-radius:10px;padding:13px 15px;box-shadow:0 2px 12px #18345118}
+h1{font-size:18px;margin:0 0 9px;color:var(--navy)}.row{display:flex;gap:8px}.row input,.row select{height:42px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:0 11px;font:14px Arial;color:var(--navy)}input{flex:1;min-width:0}
+.cats{display:flex;gap:7px;overflow-x:auto;margin-top:9px;padding-bottom:2px}.cat{height:35px;white-space:nowrap;border:1px solid var(--line);border-radius:18px;background:#fff;padding:0 11px;color:#33465d;font:12px Arial}.cat.active{border-color:var(--c);background:#f1f4f7}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin-right:6px}
+.bottom{position:absolute;z-index:1000;bottom:12px;left:50%;transform:translateX(-50%);width:min(650px,calc(100% - 24px));background:#fffffff2;border:1px solid var(--line);border-radius:9px;box-shadow:0 2px 10px #18345118}
+.bottom button{width:100%;height:44px;border:0;background:none;text-align:left;padding:0 13px;color:var(--navy);font:600 13px Arial}.years{display:none;padding:0 12px 12px;grid-template-columns:repeat(auto-fit,minmax(75px,1fr));gap:6px}.bottom.open .years{display:grid}.years button{height:34px;border:1px solid var(--line);border-radius:5px;text-align:center;padding:0;font-weight:400}.years button.active{background:var(--navy);color:#fff}
+.count{position:absolute;z-index:900;right:12px;bottom:70px;background:#fffffff0;border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--navy);font-size:12px}
+.marker-dot{width:15px;height:15px;border:2px solid white;border-radius:50%;box-shadow:0 1px 5px #0008}
+.popup{width:245px}.popup img{width:100%;height:145px;object-fit:cover;display:block;background:#eef1f4}.pbody{padding:10px 12px 12px}.pcat{font-size:10px;color:var(--red);font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}.ptitle{font-size:15px;line-height:1.25;color:var(--navy);font-weight:600}.pmeta{font-size:12px;color:#536273;margin-top:6px}.plink{display:inline-block;margin-top:9px;color:var(--navy);font-size:12px}
+.leaflet-popup-content{margin:0!important;width:245px!important}.leaflet-popup-content-wrapper{padding:0;overflow:hidden;border-radius:8px}
+@media(max-width:640px){.panel{top:7px;width:calc(100% - 14px);padding:10px;border-radius:9px}h1{font-size:16px;margin-bottom:7px}.row{gap:6px}.row input,.row select{height:43px;font-size:12px;padding:0 8px}.row select{width:116px}.cats{gap:6px;margin-top:7px}.cat{height:36px;padding:0 9px}.bottom{bottom:calc(7px + env(safe-area-inset-bottom));width:calc(100% - 14px)}.count{right:7px;bottom:65px;font-size:11px}.popup{width:min(245px,calc(100vw - 85px))}.leaflet-popup-content{width:min(245px,calc(100vw - 85px))!important}}
+</style></head><body>
+<div id="map"></div><div class="panel"><h1>Alle cold cases</h1><div class="row"><input id="q" placeholder="Zoek op naam of plaats…" type="search"><select id="country"><option value="all">Alle landen</option><option value="nl">Nederland</option><option value="abroad">Buitenland</option></select></div><div class="cats" id="cats"></div></div>
+<div class="count" id="count">Kaart laden…</div><div class="bottom" id="bottom"><button id="toggle">Zoek per decennium　⌄ <span id="chosen" style="float:right;font-weight:400;color:#68778A">Alle jaren</span></button><div class="years" id="years"></div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+const URL='https://raw.githubusercontent.com/coldcasezaken/map/main/cases.json';
+const C={'Moord':'#C6534C','Vermissing':'#3478A8','Onbekende doden':'#788695','Overige':'#9A7BBA'};
+const map=L.map('map',{zoomControl:true}).setView([52.15,5.3],7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);
+const group=L.markerClusterGroup({showCoverageOnHover:false,spiderfyOnMaxZoom:true,disableClusteringAtZoom:13,maxClusterRadius:42});map.addLayer(group);
+let data=[],cat='all',dec='all',country='all',q='';
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+function year(c){let n=Number(c.year)||Number((String(c.title||'').match(/\b(?:19|20)\d{2}\b/)||[])[0]);return n>0?n:null}
+function decade(c){let y=year(c);return y?Math.floor(y/10)*10:null}
+function abroad(c){let a=+c.lat,b=+c.lng;return !(a>=50.7&&a<=53.8&&b>=3.2&&b<=7.3)}
+function category(c){return c.category||'Overige'}
+function visible(c){return (cat==='all'||category(c)===cat)&&(dec==='all'||String(decade(c))===dec)&&(country==='all'||(country==='abroad')===abroad(c))&&(!q||(String(c.title||'')+' '+String(c.geoPlace||'')).toLocaleLowerCase('nl').includes(q))}
+function popup(c){return '<div class="popup">'+(c.image?'<img src="'+esc(c.image)+'" alt="" loading="lazy">':'')+'<div class="pbody"><div class="pcat">'+esc(category(c))+'</div><div class="ptitle">'+esc(c.title)+'</div><div class="pmeta">'+esc(c.geoPlace||'')+(year(c)?' · '+year(c):'')+'</div>'+(c.link?'<a class="plink" target="_blank" rel="noopener" href="'+esc(c.link)+'">Bekijk dossier »</a>':'')+'</div></div>'}
+function draw(){group.clearLayers();let arr=data.filter(visible);arr.forEach(c=>{let lat=+c.lat,lng=+c.lng;if(!Number.isFinite(lat)||!Number.isFinite(lng))return;let col=C[category(c)]||'#9A7BBA';let m=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="marker-dot" style="background:'+col+'"></div>',iconSize:[17,17],iconAnchor:[8,8]})});m.bindPopup(popup(c),{maxWidth:260});group.addLayer(m)});$('count').textContent=arr.length+' van '+data.length+' zaken';renderCats();renderYears()}
+function renderCats(){let counts={};data.forEach(c=>counts[category(c)]=(counts[category(c)]||0)+1);let keys=['all',...Object.keys(counts).sort()];$('cats').innerHTML=keys.map(k=>{let label=k==='all'?'Alle categorieën':k,col=C[k]||'#224576';return '<button class="cat '+(cat===k?'active':'')+'" data-k="'+esc(k)+'" style="--c:'+col+'"><span class="dot" style="--c:'+col+'"></span>'+esc(label)+' <span style="color:#8794a3">'+(k==='all'?data.length:counts[k])+'</span></button>'}).join('');$('cats').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{cat=b.dataset.k;draw()})}
+function renderYears(){let counts={};data.forEach(c=>{let d=decade(c);if(d)counts[d]=(counts[d]||0)+1});let ds=Object.keys(counts).map(Number).sort();$('years').innerHTML='<button data-y="all" class="'+(dec==='all'?'active':'')+'">Alle jaren</button>'+ds.map(d=>'<button data-y="'+d+'" class="'+(dec===String(d)?'active':'')+'">'+d+'–'+(d+9)+' ('+counts[d]+')</button>').join('');$('years').querySelectorAll('[data-y]').forEach(b=>b.onclick=()=>{dec=b.dataset.y;$('chosen').textContent=dec==='all'?'Alle jaren':dec+'–'+(+dec+9);$('bottom').classList.remove('open');draw()})}
+$('toggle').onclick=()=>$('bottom').classList.toggle('open');$('q').oninput=e=>{q=e.target.value.trim().toLocaleLowerCase('nl');draw()};$('country').onchange=e=>{
+ country=e.target.value;draw();
+ if(country!=='all'){
+  const pts=data.filter(visible).filter(c=>Number.isFinite(+c.lat)&&Number.isFinite(+c.lng)).map(c=>[+c.lat,+c.lng]);
+  if(pts.length)map.fitBounds(L.latLngBounds(pts).pad(.18),{maxZoom:8});
+ }else{map.setView([52.15,5.3],7)}
+ };
+fetch(URL).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(d=>{data=d;draw();let pts=data.filter(c=>Number.isFinite(+c.lat)&&Number.isFinite(+c.lng)).map(c=>[+c.lat,+c.lng]);map.setView([52.15,5.3],7)}).catch(e=>{$('count').textContent='Gegevens niet geladen';console.error(e)});
+</script></body></html>
