@@ -39,6 +39,17 @@
 }
 @media(max-width:380px){.panel{max-height:47vh;padding:8px}.head{align-items:flex-start}h1{font-size:15px}.total{font-size:11px}.row{grid-template-columns:minmax(0,1fr) 100px}.cat{font-size:10px;padding:0 7px}}
 
+/* Fullscreen-knop onder de zoomknoppen */
+#map .leaflet-control-fullscreen a{
+ display:block;width:30px;height:30px;line-height:30px;text-align:center;
+ color:#224576!important;background:#fff;text-decoration:none;font-size:20px;
+ font-weight:600;border-top:1px solid #D7DEE7;
+}
+#map .leaflet-control-fullscreen a:hover{background:#f4f6f8}
+#map .leaflet-control-fullscreen{border:1px solid #D7DEE7;border-radius:7px;overflow:hidden;box-shadow:0 1px 5px #18345120}
+#map .leaflet-bottom.leaflet-left{bottom:24px;left:14px}
+@media(max-width:640px){#map .leaflet-bottom.leaflet-left{bottom:22px;left:10px}}
+
 /* Zoomknoppen rechtsboven */
 #map .leaflet-top.leaflet-right{top:14px;right:14px}
 #map .leaflet-control-zoom{border:1px solid #D7DEE7!important;border-radius:7px;overflow:hidden;box-shadow:0 1px 5px #18345120}
@@ -49,10 +60,62 @@
 <div class="count" id="count">Kaart laden…</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
-const URL='cases.json';
+const URL='https://raw.githubusercontent.com/coldcasezaken/map/main/cases.json';
 const C={'Moord':'#E34B4B','Vermissing':'#258ACB','Onbekende doden':'#71879B','Overige':'#A16BD0','Nog controleren':'#D28A32'};
 const map=L.map('map',{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:18,zoomSnap:.5}).setView([52.15,5.30],7.5);
+
 L.control.zoom({position:'topright'}).addTo(map);
+const FullscreenControl=L.Control.extend({
+ onAdd:function(){
+  const wrap=L.DomUtil.create('div','leaflet-control-fullscreen leaflet-bar');
+  const a=L.DomUtil.create('a','',wrap);
+  a.href='#';a.title='Volledig scherm';a.setAttribute('aria-label','Volledig scherm');a.textContent='⛶';
+  L.DomEvent.disableClickPropagation(wrap);
+  L.DomEvent.on(a,'click',function(e){
+   L.DomEvent.preventDefault(e);
+   if(!document.fullscreenElement){
+    const target=document.documentElement;
+    if(target.requestFullscreen)target.requestFullscreen().catch(()=>{});
+   }else if(document.exitFullscreen){document.exitFullscreen();}
+  });
+  document.addEventListener('fullscreenchange',()=>{
+   const active=!!document.fullscreenElement;
+   a.title=active?'Volledig scherm verlaten':'Volledig scherm';
+   a.setAttribute('aria-label',a.title);
+   a.textContent=active?'×':'⛶';
+   setTimeout(()=>map.invalidateSize(),100);
+  });
+  return wrap;
+ }
+});
+const fullscreenControl=new FullscreenControl({position:'topright'});\nmap.addControl(fullscreenControl);
+// Verberg de fullscreenknop zolang de navigatie-/filterbalk eroverheen valt.
+(function(){
+ const control=fullscreenControl.getContainer();
+ const panel=document.querySelector('.panel');
+ if(!control||!panel)return;
+ function updateFullscreenVisibility(){
+  const c=control.getBoundingClientRect();
+  const p=panel.getBoundingClientRect();
+  const overlaps=c.right>p.left&&c.left<p.right&&c.bottom>p.top&&c.top<p.bottom;
+  control.style.visibility=overlaps?'hidden':'visible';
+  control.style.pointerEvents=overlaps?'none':'auto';
+ }
+ const schedule=()=>requestAnimationFrame(updateFullscreenVisibility);
+ window.addEventListener('resize',schedule);
+ map.on('move zoom moveend zoomend',schedule);
+ if(window.ResizeObserver){
+  const ro=new ResizeObserver(schedule);
+  ro.observe(panel);
+ }
+ if(window.MutationObserver){
+  const mo=new MutationObserver(schedule);
+  mo.observe(panel,{childList:true,subtree:true,attributes:true,characterData:true});
+ }
+ schedule();
+})();
+
+
 
 
 
@@ -111,6 +174,24 @@ function renderCats(){
  }).join('')+'<div class="total" id="total">'+data.length+' zaken</div>';
  $('cats').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{cat=b.dataset.k;draw()});
 }
+// Houd marker-popups vrij van het zwevende filterpaneel boven de kaart.
+map.on('popupopen',function(e){
+ setTimeout(function(){
+  const panel=document.querySelector('.panel');
+  const popup=e.popup&&e.popup.getElement?e.popup.getElement():null;
+  const mapBox=map.getContainer();
+  if(!panel||!popup||!mapBox)return;
+  const p=panel.getBoundingClientRect();
+  const b=popup.getBoundingClientRect();
+  const m=mapBox.getBoundingClientRect();
+  const horizontalOverlap=b.right>m.left&&b.left<m.right;
+  const covered=b.top<p.bottom&&b.bottom>p.top&&horizontalOverlap;
+  if(covered){
+   const shift=p.bottom-b.top+16;
+   map.panBy([0,-shift],{animate:true,duration:0.25});
+  }
+ },100);
+});
 map.on('moveend zoomend',()=>{renderCats();});
 $('q').oninput=e=>{q=e.target.value.trim().toLocaleLowerCase('nl');draw()};$('q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchPlace()}});$('country').onchange=e=>{
  country=e.target.value;q='';$('q').value='';cat='all';draw();
