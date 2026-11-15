@@ -88,13 +88,15 @@ const FullscreenControl=L.Control.extend({
   return wrap;
  }
 });
-const fullscreenControl=new FullscreenControl({position:'topright'});\nmap.addControl(fullscreenControl);
+const fullscreenControl=new FullscreenControl({position:'topright'});
+map.addControl(fullscreenControl);
 // Verberg de fullscreenknop zolang de navigatie-/filterbalk eroverheen valt.
 (function(){
  const control=fullscreenControl.getContainer();
  const panel=document.querySelector('.panel');
- if(!control||!panel)return;
+ if(!control)return;
  function updateFullscreenVisibility(){
+  if(!panel){control.style.visibility='visible';control.style.pointerEvents='auto';return;}
   const c=control.getBoundingClientRect();
   const p=panel.getBoundingClientRect();
   const overlaps=c.right>p.left&&c.left<p.right&&c.bottom>p.top&&c.top<p.bottom;
